@@ -19,7 +19,7 @@
 </svg>
 
 <header class="bar">
-  <a class="brand" href="./" aria-label="SinoBridge"><span class="seal" aria-hidden="true">譯</span><span class="brand-word">Sino<span>Bridge</span></span><span class="brand-sub">中文 · VI · EN</span></a>
+  <a class="brand" id="home" href="./" aria-label="SinoBridge — Trang chủ"><span class="seal" aria-hidden="true">譯</span><span class="brand-word">Sino<span>Bridge</span></span><span class="brand-sub">中文 · VI · EN</span></a>
   <p class="doc" id="current" hidden></p>
   <nav class="bar-nav"><a href="#faq">Hỏi đáp</a><button class="theme" id="theme" type="button" aria-label="Đổi nền sáng/tối"><svg class="ic"><use href="#i-moon"/></svg></button><a href="https://github.com/tuyentran-md/sinobridge" rel="noopener" target="_blank">GitHub</a></nav>
 </header>
@@ -81,6 +81,7 @@
         <button id="stop" class="btn ghost" type="button" hidden>Dừng</button>
       </div>
       <div class="inlay" id="inlay" role="progressbar" aria-label="Tiến độ dịch" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+      <p id="checkpoint" class="checkpoint-note" hidden></p>
       <p id="status" class="status" role="status" aria-live="polite">Thả một tài liệu tiếng Trung để bắt đầu.</p>
     </section>
 
@@ -106,7 +107,7 @@
         <div class="drop-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M24 39V11m0 28c-6-4-12-5-19-4V9c7-1 13 0 19 4 6-4 12-5 19-4v26c-7-1-13 0-19 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 16c4-.5 8 0 11 2m-11 5c4-.5 8 0 11 2m8-7c3-2 7-2.5 11-2m-11 9c3-2 7-2.5 11-2" stroke="currentColor" stroke-opacity=".5" stroke-width="1.3" stroke-linecap="round"/></svg></div>
         <div class="drop-copy">
           <h2>Chọn một tài liệu để bắt đầu</h2>
-          <p>Hoặc kéo thả tệp vào đây · EPUB, PDF có chữ, Word, TXT, Markdown, HTML</p>
+          <p>Kéo thả EPUB, PDF có chữ, Word, TXT, Markdown, HTML · Tối đa 32 MB</p>
         </div>
         <div class="drop-actions"><span class="btn primary">Chọn tệp <svg class="ic"><use href="#i-up"/></svg></span><button id="try-sample" type="button" class="btn ghost">Xem bản mẫu</button></div>
       </div>
@@ -115,19 +116,40 @@
         <li><b>Chọn cách dịch</b>Gemini, GPT hoặc model của riêng bạn.</li>
         <li><b>Đọc &amp; lưu</b>Đối chiếu từng đoạn, xuất EPUB hay Word.</li>
       </ol>
-      <p class="welcome-footnote"><span aria-hidden="true">◆</span> Dịch trong trình duyệt. Không có máy chủ SinoBridge nhận tài liệu của bạn.</p>
+      <p class="welcome-footnote"><span aria-hidden="true">◆</span> Dùng key hoặc tài khoản của chính bạn. <a href="#workflow">Cách dịch &amp; lưu tiến độ</a></p>
     </div>
     <div class="pane" id="pane" hidden>
+      <div class="reader-tools">
+        <button id="back-home" class="btn ghost small" type="button">← Trang chủ</button>
+        <label class="reading-choice">Đọc <select id="reading-mode"><option value="translation">Bản dịch</option><option value="bilingual">Song ngữ</option><option value="original">Bản gốc</option></select></label>
+        <nav class="pagination" aria-label="Trang đọc">
+          <button id="page-prev" class="btn ghost small" type="button">Trước</button>
+          <label>Trang <input id="page-number" type="number" min="1" value="1" aria-label="Trang đọc"></label><span id="page-count"></span>
+          <button id="show-more" class="btn ghost small" type="button">Sau</button>
+        </nav>
+        <span id="reader-range" class="reader-range"></span>
+      </div>
       <div class="pane-head"><span>Bản gốc</span><span></span><span class="pane-tr"><span id="target-label">Bản dịch</span><span class="done-count" id="done-count"></span></span></div>
       <div id="preview" class="rows"></div>
-      <button id="show-more" class="btn ghost more-rows" type="button" hidden></button>
     </div>
   </main>
 </div>
 
+<section class="workflow" id="workflow" aria-labelledby="h-workflow">
+  <h2 id="h-workflow">Một cuốn sách được dịch thế nào?</h2>
+  <ol class="workflow-steps">
+    <li><h3>Chia nhỏ, giữ thứ tự</h3><p>Ứng dụng tách văn bản thành các đoạn, gửi từng nhóm nhỏ tới model bạn chọn. Không gửi nguyên cuốn sách trong một lần; hai đoạn nguồn trước đó được thêm làm ngữ cảnh gần.</p></li>
+    <li><h3>Lưu xong mới dịch tiếp</h3><p>Mỗi nhóm dịch xong được lưu ngay trên trình duyệt này. Bấm Dừng, rồi chọn lại tài liệu trong thư viện và bấm Dịch tiếp: những đoạn đã lưu được bỏ qua. Không cần copy lại từng phần.</p></li>
+    <li><h3>Đọc và mang bản dịch đi</h3><p>Chọn Bản dịch để đọc liền mạch, Song ngữ để đối chiếu hoặc Bản gốc. Mỗi trang đọc hiển thị tối đa 200 đoạn. Có thể tải EPUB, Word, TXT hoặc HTML ngay khi mới dịch một phần.</p></li>
+  </ol>
+  <details><summary>Khác gì so với copy–paste vào Gemini hoặc ChatGPT?</summary><p>SinoBridge lo việc chia đoạn, xếp lượt dịch, giữ thứ tự, ghép bản gốc với bản dịch, lưu tiến độ và xuất file. Chất lượng vẫn phụ thuộc vào model và cách người đọc kiểm tra; ứng dụng không tự bảo đảm bản dịch hay hơn chat, không giữ toàn bộ cuốn sách trong ngữ cảnh và chưa có bộ nhớ thuật ngữ hay kiểm định số liệu ở bản web.</p></details>
+  <details><summary>Sách vài nghìn trang có dùng được không?</summary><p>Bản web nhận tối đa 32 MB, 8 triệu ký tự văn bản và PDF tối đa 900 trang; PDF scan cần OCR trước. Đây là giới hạn nhập file, không phải cam kết mọi máy đều dịch được sách lớn. Sách dài nên chia theo chương hoặc tập, dịch thử một chương để xem chất lượng, tốc độ và hạn mức. Giữ tab mở khi dịch; tắt máy hoặc đóng tab sẽ ngừng dịch. Model dùng key hoặc tài khoản của chính bạn, không có lượt dịch chung miễn phí từ SinoBridge.</p></details>
+  <details><summary>Checkpoint nằm ở đâu, có mất không?</summary><p>Tài liệu và các đoạn dịch đã lưu nằm trong bộ nhớ của trình duyệt trên máy này. Mở lại đúng trình duyệt và địa chỉ trang, chọn tài liệu ở thư viện để tiếp tục. Chuyển máy, dùng chế độ riêng tư hoặc xóa dữ liệu trang có thể làm mất tiến độ; checkpoint không tự đồng bộ lên cloud. Hãy tải bản dịch định kỳ. File EPUB/Word tải xuống là bản đọc, không phải bản sao checkpoint có thể nhập lại để phục hồi tiến độ. Nhóm đang dịch dở lúc đóng tab có thể phải dịch lại.</p></details>
+</section>
+
 <section class="faq" id="faq" aria-labelledby="h-faq">
   <h2 id="h-faq">Hỏi đáp</h2>
-  <details><summary>Tài liệu và key của tôi đi đâu?</summary><p>File được đọc ngay trong trình duyệt. Khi dịch, từng đoạn văn được gửi thẳng tới nhà cung cấp model bạn chọn (ví dụ Google), kèm key của bạn; không có máy chủ SinoBridge nào ở giữa. Key chỉ được lưu trên máy nếu bạn tích "Nhớ key". Bản dịch lưu trong bộ nhớ trình duyệt, đóng tab vẫn mở lại dịch tiếp được.</p></details>
+  <details><summary>Tài liệu và key của tôi đi đâu?</summary><p>File được đọc ngay trong trình duyệt. Khi dịch, từng đoạn văn được gửi thẳng tới nhà cung cấp model bạn chọn (ví dụ Google), kèm key của bạn; không có máy chủ SinoBridge nào ở giữa. Key chỉ được lưu trên máy nếu bạn tích "Nhớ key". Bản dịch đã lưu nằm trên trình duyệt này. Đóng tab sẽ ngừng dịch; mở lại trang và chọn tài liệu trong thư viện để dịch tiếp. Xóa dữ liệu trang có thể làm mất tiến độ.</p></details>
   <details><summary>Lấy key Gemini miễn phí thế nào?</summary><p>Vào Google AI Studio (aistudio.google.com/apikey), đăng nhập tài khoản Google, bấm "Create API key" rồi dán vào ô API key. Gói miễn phí có giới hạn số lần gọi mỗi phút và mỗi ngày; khi chạm giới hạn, SinoBridge tự chờ rồi dịch tiếp. Ở gói miễn phí, Google có thể dùng dữ liệu gửi lên để cải thiện dịch vụ, nên đừng dịch tài liệu nhạy cảm bằng gói này.</p></details>
   <details><summary>Tôi có tài khoản ChatGPT Plus hoặc Google AI Pro, dùng được không?</summary><p>Được. Cài và đăng nhập công cụ dòng lệnh chính thức của hãng một lần (Antigravity CLI <code>agy</code> cho tài khoản Google, Codex CLI cho tài khoản ChatGPT), rồi mở app SinoBridge trên máy. Trên trang này, chọn "Tài khoản Google" hoặc "Tài khoản ChatGPT": trang gửi từng đoạn tới app trên máy bạn (127.0.0.1), app gọi công cụ đã đăng nhập. Không cần API key; lượt dùng tính vào gói của bạn. Chrome hoặc Edge có thể hỏi quyền truy cập thiết bị trong mạng cục bộ, hãy bấm Cho phép.</p></details>
   <details><summary>"Chạy trên máy" là gì?</summary><p>Trình duyệt tải một model nhỏ (Qwen 2.5, vài trăm MB đến vài GB) và dịch bằng GPU của máy bạn, không cần key. Cần Chrome hoặc Edge mới trên máy tính có WebGPU. Model nhỏ dịch kém hơn nhiều so với Gemini hay GPT.</p></details>

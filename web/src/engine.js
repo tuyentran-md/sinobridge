@@ -204,7 +204,7 @@ async function local(modelId, onStatus) {
 }
 
 // Translate every untranslated segment. onDone(index) fires as each segment lands.
-export async function translateProject({ project, provider, key, model, signal, onStatus, onDone, onWorking }) {
+export async function translateProject({ project, provider, key, model, signal, onStatus, onDone, onCheckpoint, onWorking }) {
   const p = PROVIDERS[provider];
   const segments = project.segments;
   const system = systemPrompt(project.target);
@@ -228,12 +228,16 @@ export async function translateProject({ project, provider, key, model, signal, 
         parsed[n] = parseNumbered(await ask([{ role: 'system', content: system }, { role: 'user', content: userMessage(segments, [indices[n]]) }]), 1)[0];
       }
     }
+    const completed=[];
     indices.forEach((index, n) => {
       if (!parsed[n]) return;
       segments[index].translation = parsed[n];
       segments[index].status = 'draft';
-      onDone?.(index);
+      completed.push(index);
     });
+    // Commit the completed passages before starting another batch.
+    if(completed.length)await onCheckpoint?.(completed);
+    completed.forEach(index=>onDone?.(index));
     onWorking?.(indices, false);
     if (parsed.some(t => !t)) throw new Error('Model trả về đoạn trống. Bấm Dịch tiếp để thử lại.');
   }

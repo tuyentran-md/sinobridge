@@ -4,21 +4,35 @@
 
 **Tiếng Việt** · [English](README.en.md)
 
-**[Dùng thử trên web](https://tuyentran-md.github.io/sinobridge/)** · Dán key Gemini miễn phí (hoặc key GPT, DeepSeek, Qwen, OpenRouter) rồi dịch và đọc song song ngay trong trình duyệt; không có máy chủ trung gian. Không có key thì chạy model nhỏ trên máy (cần WebGPU). Xem [giới hạn của bản web](web/README.md).
+**[Dùng thử trên web](https://tuyentran-md.github.io/sinobridge/)** · Dán key Gemini miễn phí (hoặc key GPT, DeepSeek, Qwen, OpenRouter) rồi dịch và đọc song song ngay trong trình duyệt; không có máy chủ trung gian. Có thể dùng account Google/ChatGPT đã đăng nhập qua app local; hoặc model nhỏ trong trình duyệt (cần WebGPU). Xem [giới hạn của bản web](web/README.md).
 
 SinoBridge là công cụ mã nguồn mở để dịch tài liệu trên máy tính. Bạn chọn file, ngôn ngữ và model AI đang sử dụng. Ứng dụng chia tài liệu thành các đoạn, hỗ trợ kiểm tra bản dịch và xuất file đọc. Dòng lệnh có thêm các chức năng dành cho nghiên cứu.
 
 | Phần | Làm gì |
 |---|---|
 | **Nhập tài liệu** | Mở EPUB, PDF có lớp chữ, Word, TXT, Markdown, HTML và phụ đề. Dòng lệnh còn nhận trang web công khai và file trích dẫn xuất từ CNKI/Wanfang/VIP/SinoMed; không tự truy cập các kho trả phí. |
-| **Dịch và kiểm tra** | Dịch sang tiếng Việt hoặc tiếng Anh bằng API key/model của người dùng hoặc Ollama trên máy. Bộ nhớ thuật ngữ giúp giữ cách gọi nhất quán; bộ kiểm tra tự động gắn cờ một số lỗi về số liệu và trích dẫn. |
+| **Dịch và kiểm tra** | Dịch sang tiếng Việt hoặc tiếng Anh bằng API key/model của người dùng hoặc Ollama trên máy. CLI có bộ nhớ thuật ngữ và bộ kiểm tra tự động gắn cờ một số lỗi về số liệu/trích dẫn; bản web chưa có các bước này. |
 | **Đọc và xuất file** | Tải EPUB, Word, Markdown, phụ đề hoặc trang HTML song ngữ. Chọn một đoạn để xem bản gốc, ghi chú kiểm tra và lịch sử sửa. |
 
 ![Trang đọc song ngữ: bấm một câu tiếng Việt để xem câu tiếng Trung gốc, lỗi kiểm định, tên riêng và âm Hán Việt](docs/images/review-page.png)
 
 *Ví dụ trang đối chiếu: đoạn sai số liệu được gắn viền đỏ. Khi chọn một đoạn, phần bên phải hiển thị bản gốc, thuật ngữ và ghi chú kiểm tra. Rê chuột lên chữ 北 để xem âm Hán Việt.*
 
+![Trang web SinoBridge: nền sáng, thư viện và công cụ dịch](docs/images/browser-home.png)
+
+## Đọc và dịch sách dài trên web
+
+- Chọn **Bản dịch** để đọc liền mạch, **Song ngữ** để đối chiếu hoặc **Bản gốc**. Mỗi trang đọc chỉ hiện tối đa 200 đoạn; có nút Trước/Sau và ô nhảy trang.
+- Ứng dụng chia sách thành các đoạn và gửi từng nhóm nhỏ tới model, giữ thứ tự rồi ghép thành bản dịch. Hai đoạn nguồn trước đó được dùng làm ngữ cảnh gần; model không có toàn bộ cuốn sách trong một lượt.
+- Mỗi nhóm dịch xong được lưu thành checkpoint trên trình duyệt này. Bấm **Dừng**, sau đó chọn lại tài liệu trong thư viện và **Dịch tiếp**: các đoạn đã lưu không bị gửi lại. Bấm logo hoặc **Trang chủ** để về màn hình đầu; tài liệu vẫn nằm trong thư viện.
+- Bản web nhận tối đa **32 MB, 8 triệu ký tự; PDF tối đa 900 trang**. Sách vài nghìn trang nên chia theo chương hoặc tập. Giữ tab mở khi dịch, thử một chương trước để đánh giá chất lượng và hạn mức của model.
+- Checkpoint không tự lên cloud. Cần dùng lại cùng trình duyệt và địa chỉ trang; xóa dữ liệu trang có thể làm mất tiến độ. Tải bản dịch định kỳ. EPUB/Word là bản đọc, không phải checkpoint có thể nhập lại để khôi phục.
+
+**Khác gì copy–paste vào Gemini/ChatGPT?** SinoBridge lo chia đoạn, xếp lượt, giữ thứ tự, ghép song ngữ, dịch tiếp và xuất file. Chất lượng vẫn phụ thuộc model; bản web chưa có bộ nhớ thuật ngữ, kiểm định số liệu/trích dẫn hay lịch sử duyệt như CLI. Mỗi người dùng key/account của chính mình, không dùng chung account của người làm trang. [Chi tiết bản web](web/README.md).
+
 ## Cách hoạt động
+
+Sơ đồ dưới đây mô tả quy trình đầy đủ của **CLI**. Bản web tập trung vào dịch, checkpoint, đọc và xuất file như phần trên.
 
 ```mermaid
 flowchart LR
@@ -63,6 +77,7 @@ Sau đó chọn "Tài khoản ChatGPT" hoặc "Tài khoản Google / Gemini" ở
 - SinoBridge chạy công cụ trong một thư mục tạm trống, chế độ chỉ đọc, và yêu cầu trả về đúng một đối tượng JSON chứa bản dịch.
 - **Dùng ngay trên trang web:** mở app trên máy (scripts/Start SinoBridge.command hoặc sinobridge serve), rồi trên [trang web](https://tuyentran-md.github.io/sinobridge/) chọn "Tài khoản Google (Antigravity)" hoặc "Tài khoản ChatGPT". Trang gửi từng đoạn tới app trên máy bạn (127.0.0.1:8765), app gọi công cụ đã đăng nhập. App chỉ nhận yêu cầu từ trang SinoBridge chính thức (kiểm tra Origin và Host), không nhận từ trang khác. Chrome hoặc Edge có thể hỏi quyền truy cập thiết bị trong mạng cục bộ: bấm Cho phép. Safari có thể chặn kết nối này; khi đó dùng Chrome, hoặc dùng thẳng giao diện của app trên máy.
 - Danh sách model của tài khoản Google lấy từ lệnh agy models (ví dụ gemini-3.8-flash-medium).
+- Nếu cổng 8765 đang được ứng dụng khác sử dụng, chạy `sinobridge serve --port 8767`, rồi nhập **8767** ở ô **Cổng app** trên trang web. Không dừng ứng dụng khác để lấy cổng.
 
 ## Cài đặt (dòng lệnh)
 

@@ -124,6 +124,8 @@ try:
 
         # Persistence and exports.
         page.reload(wait_until="domcontentloaded")
+        page.locator("#welcome").wait_for(state="visible")
+        page.locator("#library .library-item").first.click()
         page.locator("#current").wait_for(state="visible")
         assert page.locator("#preview .row.done").count() == rows
         for fmt in ("epub", "docx", "html", "txt"):

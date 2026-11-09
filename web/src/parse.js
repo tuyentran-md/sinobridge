@@ -68,7 +68,7 @@ function normalizedEntry(base, relative) {
   return result.join('/');
 }
 
-async function extractEpub(bytes) {
+async function extractEpub(bytes,onProgress) {
   const {default:JSZip}=await import('jszip');
   const zip = await JSZip.loadAsync(bytes);
   const container = zip.file('META-INF/container.xml');
@@ -83,6 +83,7 @@ async function extractEpub(bytes) {
   const items = new Map(localAttr(opf, 'item').map(el => [el.getAttribute('id'), el.getAttribute('href')]));
   const prefix = opfPath.substring(0, opfPath.lastIndexOf('/')+1);
   const parts = [];
+  let chars=0;
   const spine = localAttr(opf, 'itemref');
   if (!spine.length) throw new Error('EPUB không có danh sách chương.');
   for (const itemref of spine) {
@@ -91,20 +92,25 @@ async function extractEpub(bytes) {
     const file = zip.file(normalizedEntry(prefix, decodeURIComponent(href.split('#')[0])));
     if (!file) continue;
     const content = await file.async('text');
-    parts.push(htmlToText(content));
-    if (parts.join('').length > MAX_TEXT_CHARS) throw new Error('EPUB quá dài cho bản web.');
+    const text=htmlToText(content);
+    parts.push(text);chars+=text.length;
+    if (chars > MAX_TEXT_CHARS) throw new Error('EPUB vượt 8 triệu ký tự. Hãy chia theo chương hoặc tập.');
+    onProgress?.('Đang đọc EPUB · '+parts.length+'/'+spine.length+' phần…');
+    await new Promise(resolve=>setTimeout(resolve,0));
   }
   return parts.filter(Boolean).join('\n\n');
 }
 
-async function extractPdf(bytes) {
+async function extractPdf(bytes,onProgress) {
   const pdfjsLib=await import('pdfjs-dist');
   const {default:workerURL}=await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
   pdfjsLib.GlobalWorkerOptions.workerSrc=workerURL;
-  const doc = await pdfjsLib.getDocument({data: new Uint8Array(bytes)}).promise;
-  if (doc.numPages > 900) throw new Error('PDF có hơn 900 trang. Hãy chia file thành các phần nhỏ.');
+  const task = pdfjsLib.getDocument({data: new Uint8Array(bytes)});
   const pages=[];
+  let chars=0;
   try {
+    const doc=await task.promise;
+    if (doc.numPages > 900) throw new Error('PDF có hơn 900 trang. Hãy chia file thành các phần nhỏ.');
     for (let index=1; index<=doc.numPages; index++) {
       const page = await doc.getPage(index);
       const content = await page.getTextContent();
@@ -116,14 +122,16 @@ async function extractPdf(bytes) {
         if (item.hasEOL) { lines.push(current); current=''; }
       }
       if (current) lines.push(current);
-      pages.push(lines.join('\n'));
-      if (pages.join('').length > MAX_TEXT_CHARS) throw new Error('PDF quá dài cho bản web.');
+      const text=lines.join('\n');
+      pages.push(text);chars+=text.length;page.cleanup();
+      if (chars > MAX_TEXT_CHARS) throw new Error('PDF vượt 8 triệu ký tự. Hãy chia theo chương hoặc tập.');
+      onProgress?.('Đang đọc PDF · '+index+'/'+doc.numPages+' trang…');
     }
-  } finally { await doc.destroy(); }
+  } finally { await task.destroy(); }
   return pages.filter(Boolean).join('\n\n');
 }
 
-export async function extractFile(file) {
+export async function extractFile(file,onProgress) {
   if (!file || file.size > MAX_FILE_BYTES) throw new Error('Bản web nhận file tối đa 32 MB.');
   const ext = file.name.toLowerCase().split('.').pop();
   const bytes = await file.arrayBuffer();
@@ -133,9 +141,9 @@ export async function extractFile(file) {
   } else if (['html','htm'].includes(ext)) {
     raw = htmlToText(new TextDecoder('utf-8').decode(bytes));
   } else if (ext === 'epub') {
-    raw = await extractEpub(bytes);
+    raw = await extractEpub(bytes,onProgress);
   } else if (ext === 'pdf') {
-    raw = await extractPdf(bytes);
+    raw = await extractPdf(bytes,onProgress);
     if (raw.replace(/\s/g,'').length < 20) throw new Error('PDF không có lớp chữ. File scan cần OCR trước.');
   } else if (ext === 'docx') {
     const {default:mammoth}=await import('mammoth');

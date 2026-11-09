@@ -4,21 +4,35 @@
 
 [Tiếng Việt](README.md) · **English**
 
-**[Try the browser demo](https://tuyentran-md.github.io/sinobridge/)** · Paste a free Gemini key (or a GPT, DeepSeek, Qwen or OpenRouter key) and translate and read side by side in the browser, with no server in between. No key? Run a small model locally (WebGPU required). See [browser demo limitations](web/README.md).
+**[Try the browser demo](https://tuyentran-md.github.io/sinobridge/)** · Paste a free Gemini key (or a GPT, DeepSeek, Qwen or OpenRouter key) and translate and read side by side in the browser, with no server in between. You can also use your signed-in Google/ChatGPT account through the local app, or a small browser model (WebGPU required). See [browser demo limitations](web/README.md).
 
 SinoBridge is an open-source tool for translating Chinese documents on your computer. Add a file, choose a language and your own AI model, then download the translation. The command-line interface also supports research workflows.
 
 | Part | What it does |
 |---|---|
 | **Import files** | Open EPUB, text-based PDF, Word, TXT, Markdown, HTML and subtitles. The CLI also imports public web pages and citation exports from CNKI/Wanfang/VIP/SinoMed; it does not access paid databases directly. |
-| **Translate and check** | Translate into English or Vietnamese with your own model/API key, or use Ollama locally. A term memory keeps names consistent; automatic checks flag some problems with numbers and citations. |
+| **Translate and check** | Translate into English or Vietnamese with your own model/API key, or use Ollama locally. The CLI has term memory and numeric/citation checks; the browser version does not yet include those steps. |
 | **Read and export** | Download EPUB, Word, Markdown, subtitles or offline bilingual HTML. Select a passage to see its Chinese source, notes and revision history. |
 
 ![Bilingual review page: click a translated sentence to see the Chinese source, QA flags, names and pinyin](docs/images/review-page-en.png)
 
 *In the offline bilingual review page, a red border flags a number mismatch. Select a passage to see its Chinese source, terms and review notes. Hover over 北 to see its pinyin.*
 
+![SinoBridge browser home: light background, library and translation controls](docs/images/browser-home.png)
+
+## Read and translate long books in the browser
+
+- Choose translation-only, bilingual or original-only reading. Each reading page renders at most 200 passages, with Previous/Next and direct page navigation.
+- Text is split into small numbered batches and reassembled in source order. Two preceding source passages provide nearby context; the model does not receive the whole book at once.
+- Completed batches are checkpointed in this browser. Stop, reopen a saved title from the library and resume without resending completed passages. The logo and **Trang chủ** button return home without deleting the library.
+- Imports are limited to **32 MiB, 8 million text code units and 900 PDF pages**. Split books with thousands of pages into chapters or volumes, keep the tab open during translation, and try a chapter first to assess quality and quota.
+- Checkpoints do not sync to the cloud. Use the same browser profile and site origin; clearing site data can lose progress. Download reading copies periodically. EPUB/DOCX exports are not restorable checkpoints.
+
+Compared with pasting into a chat, SinoBridge handles segmentation, queuing, ordering, source/translation pairing, resume and file assembly. Translation quality still depends on the chosen model. The browser does not include the CLI's terminology memory, numeric/citation QA or review history. Every visitor uses their own credentials/account. See the [browser documentation](web/README.md).
+
 ## How it works
+
+The diagram below describes the full **CLI** workflow. The browser focuses on translation, checkpoints, reading and export, as described above.
 
 ```mermaid
 flowchart LR
@@ -63,6 +77,7 @@ Then pick "ChatGPT account" or "Google / Gemini account" as the provider and lea
 - SinoBridge runs the tool in an empty temporary folder, read-only, and asks for a single JSON object with the translation.
 - **From the web page too:** start the local app (scripts/Start SinoBridge.command or sinobridge serve), then on the [web page](https://tuyentran-md.github.io/sinobridge/) choose "Google account (Antigravity)" or "ChatGPT account". The page sends each passage to the app on your own computer (127.0.0.1:8765), which runs the signed-in tool. The app only accepts requests from the official SinoBridge page (Origin and Host are checked). Chrome or Edge may ask for permission to access devices on your local network: allow it. Safari may block this connection; use Chrome, or the local app's own interface.
 - The Google model list comes from agy models (for example gemini-3.8-flash-medium).
+- If port 8765 is occupied, run `sinobridge serve --port 8767` and enter **8767** in the page's app-port field. Leave the other application running.
 
 ## Install (command line)
 

@@ -48,6 +48,21 @@ Giao diện có tiếng Việt và tiếng Anh. Tài liệu lưu tại máy ngư
 
 Chi tiết cài đặt: [hướng dẫn cho người mới](docs/quickstart-gui.md). Ai quen dòng lệnh có thể chạy lệnh sinobridge serve --open.
 
+## Dùng tài khoản ChatGPT hoặc Google
+
+Không có API key nhưng đã có tài khoản? Bản chạy trên máy dùng được tài khoản bạn đang có, qua công cụ dòng lệnh chính thức của hãng, không cần API key:
+
+| Chọn trong ứng dụng | Công cụ cần cài | Đăng nhập một lần |
+|---|---|---|
+| Tài khoản ChatGPT (Plus, Pro, Team…) | [Codex CLI](https://developers.openai.com/codex/cli) | chạy lệnh codex login |
+| Tài khoản Google (miễn phí hoặc Google AI Pro) | [Antigravity CLI](https://antigravity.google) (lệnh agy) | chạy agy rồi đăng nhập Google |
+
+Sau đó chọn "Tài khoản ChatGPT" hoặc "Tài khoản Google / Gemini" ở mục chọn model, để trống ô Model nếu muốn dùng model mặc định. Dòng lệnh: sinobridge translate --provider chatgpt --allow-external (hoặc --provider google).
+
+- Nội dung vẫn được gửi tới OpenAI hoặc Google, nên ứng dụng vẫn hỏi xác nhận trước khi dịch. Lượt dùng tính vào hạn mức của gói tài khoản.
+- SinoBridge chạy công cụ trong một thư mục tạm trống, chế độ chỉ đọc, và yêu cầu trả về đúng một đối tượng JSON chứa bản dịch.
+- Bản web trên GitHub Pages không làm được việc này: trình duyệt không chạy được công cụ trên máy, và các gói ChatGPT/Google AI Pro không mở API cho trang khác. Trên web, hãy dùng API key (Gemini có gói miễn phí, chỉ tính tiền khi bạn tự bật thanh toán).
+
 ## Cài đặt (dòng lệnh)
 
 Python 3.10+.

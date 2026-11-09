@@ -74,11 +74,12 @@ details summary{cursor:pointer;font-size:.84rem;color:var(--muted)}
 <h2><span class="number">2</span> <span data-i18n="step2"></span></h2>
 <div class="fields">
 <div class="field"><label for="provider" data-i18n="provider"></label>
-<select id="provider"><option value="gemini">Gemini</option><option value="openai">OpenAI</option><option value="deepseek">DeepSeek</option><option value="qwen">Qwen</option><option value="openrouter">OpenRouter</option><option value="ollama" data-i18n="ollama"></option></select></div>
+<select id="provider"><option value="chatgpt" data-i18n="acctChatgpt"></option><option value="google" data-i18n="acctGoogle"></option><option value="gemini">Gemini API key</option><option value="openai">OpenAI</option><option value="deepseek">DeepSeek</option><option value="qwen">Qwen</option><option value="openrouter">OpenRouter</option><option value="ollama" data-i18n="ollama"></option></select></div>
 <div class="field"><label for="model" data-i18n="model"></label><input id="model" type="text" spellcheck="false" data-i18n-ph="modelPh"></div>
 </div>
 <div class="field" style="margin-top:15px" id="keyfield"><label for="key" data-i18n="key"></label><input id="key" type="password" autocomplete="off" data-i18n-ph="keyPh"></div>
-<div class="small" style="margin:12px 0" data-i18n="keyNote"></div>
+<div class="small" style="margin:12px 0" id="keynote" data-i18n="keyNote"></div>
+<div class="small hidden" style="margin:12px 0" id="acctnote"></div>
 <div class="row" id="consentrow"><input type="checkbox" id="consent"><label for="consent" data-i18n="consent"></label></div>
 <div class="row"><button class="primary" id="run" disabled data-i18n="run"></button><button id="stop" class="ghost hidden" data-i18n="stop"></button></div>
 <div id="runstatus" class="small" style="margin:12px 0"></div>
@@ -113,13 +114,13 @@ const TOKEN=__SERVER_TOKEN__;
 const header={"X-SinoBridge-Token":TOKEN};
 const byId=id=>document.getElementById(id);
 let selected=null, poller=null;
-const defaults={gemini:"gemini-2.5-flash",openai:"gpt-4.1-mini",deepseek:"deepseek-chat",qwen:"qwen-plus",openrouter:"",ollama:"qwen2.5:7b"};
+const defaults={chatgpt:"",google:"",gemini:"gemini-2.5-flash",openai:"gpt-4.1-mini",deepseek:"deepseek-chat",qwen:"qwen-plus",openrouter:"",ollama:"qwen2.5:7b"};
 const STR={
 vi:{tag:"Mã nguồn mở · Dùng API của bạn",eyebrow:"DỊCH SÁCH VÀ TÀI LIỆU TIẾNG TRUNG",
  h1:"Dịch tài liệu tiếng Trung<br>sang tiếng Việt hoặc tiếng Anh.",lede:"Thêm file PDF, EPUB hoặc Word. Chọn ngôn ngữ và model bạn muốn dùng, rồi bắt đầu dịch. Khi hoàn tất, bạn có thể tải bản dịch hoặc mở bản song ngữ để đối chiếu.",
  step1:"Thêm tài liệu",dropAria:"Kéo thả hoặc chọn tài liệu từ máy",dropHere:"Kéo thả tài liệu vào đây",formats:"EPUB, PDF, Word, TXT, HTML, phụ đề · tối đa 64 MB",pick:"Chọn từ máy",
  targetLabel:"Dịch sang",toVi:"Tiếng Việt",toEn:"Tiếng Anh (English)",kindLabel:"Loại tài liệu",kindBook:"Sách hoặc tài liệu",kindPaper:"Bài báo nghiên cứu",
- step2:"Chọn model để dịch",provider:"Dịch vụ AI",ollama:"Ollama (chạy trên máy)",model:"Model",modelPh:"Nhập tên model",key:"API key của bạn",keyPh:"Dán API key của dịch vụ đã chọn",
+ step2:"Chọn model để dịch",provider:"Dịch vụ AI",ollama:"Ollama (chạy trên máy)",acctChatgpt:"Tài khoản ChatGPT (không cần API key)",acctGoogle:"Tài khoản Google / Gemini (không cần API key)",acctChatgptNote:"Dùng gói ChatGPT bạn đang có, qua Codex CLI của OpenAI trên máy này. Đăng nhập một lần bằng lệnh codex login. Để trống ô Model để dùng model mặc định của tài khoản.",acctGoogleNote:"Dùng tài khoản Google (gói miễn phí hoặc Google AI Pro), qua Antigravity CLI (agy) trên máy này. Chạy agy một lần để đăng nhập. Để trống ô Model để dùng model mặc định.",acctMissing:"Máy này chưa cài công cụ đó.",model:"Model",modelPh:"Nhập tên model",key:"API key của bạn",keyPh:"Dán API key của dịch vụ đã chọn",
  keyNote:"Bạn dùng API key của mình và trả phí trực tiếp cho dịch vụ AI nếu có. SinoBridge không lưu key vào file.",
  consent:"Tôi có quyền sử dụng tài liệu này và đồng ý gửi nội dung để dịch.",run:"Dịch tài liệu",stop:"Dừng dịch",
  step3:"Tải bản dịch",step3Note:"Chọn EPUB để đọc sách, Word để chỉnh sửa, hoặc HTML để xem song ngữ. Bản dịch máy được ghi rõ là bản nháp.",
@@ -139,7 +140,7 @@ en:{tag:"Open source · Bring your own API",eyebrow:"TRANSLATE CHINESE BOOKS AND
  h1:"Translate Chinese documents<br>into English or Vietnamese.",lede:"Add a PDF, EPUB or Word file. Choose a language and a model you already use, then translate. Download the result or open the bilingual view to compare it with the original.",
  step1:"Add a document",dropAria:"Drop a document or choose a file",dropHere:"Drop your document here",formats:"EPUB, PDF, Word, TXT, HTML, subtitles · up to 64 MB",pick:"Browse files",
  targetLabel:"Translate into",toVi:"Vietnamese (Tiếng Việt)",toEn:"English",kindLabel:"Document type",kindBook:"Book or document",kindPaper:"Research paper",
- step2:"Choose a model",provider:"AI provider",ollama:"Ollama (runs locally)",model:"Model",modelPh:"Enter a model name",key:"Your API key",keyPh:"Paste your API key for this provider",
+ step2:"Choose a model",provider:"AI provider",ollama:"Ollama (runs locally)",acctChatgpt:"ChatGPT account (no API key)",acctGoogle:"Google / Gemini account (no API key)",acctChatgptNote:"Uses your existing ChatGPT plan through OpenAI's Codex CLI on this computer. Sign in once with: codex login. Leave Model empty to use the account default.",acctGoogleNote:"Uses your Google account (free or Google AI Pro) through the Antigravity CLI (agy) on this computer. Run agy once to sign in. Leave Model empty to use the default.",acctMissing:"That tool is not installed on this computer.",model:"Model",modelPh:"Enter a model name",key:"Your API key",keyPh:"Paste your API key for this provider",
  keyNote:"Use your own API key. Any API charges go directly to your provider. SinoBridge does not save the key to a file.",
  consent:"I have the right to use this document and agree to send its text for translation.",run:"Translate document",stop:"Stop translation",
  step3:"Download your translation",step3Note:"Choose EPUB to read, Word to edit, or HTML to compare both languages. Machine-translated text is labeled as a draft.",
@@ -265,9 +266,14 @@ drop.addEventListener("click",e=>{if(e.target.id!=="pick")byId("fileinput").clic
 drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();byId("fileinput").click();}});
 byId("pick").onclick=()=>byId("fileinput").click();
 byId("fileinput").onchange=e=>upload(e.target.files[0]);
+let accounts={};
+api("/api/accounts").then(a=>{accounts=a||{};providerChanged();}).catch(()=>{});
 function providerChanged(){
- const isLocal=byId("provider").value==="ollama";
- byId("keyfield").classList.toggle("hidden",isLocal);
+ const p=byId("provider").value,isLocal=p==="ollama",isAcct=p==="chatgpt"||p==="google";
+ byId("keyfield").classList.toggle("hidden",isLocal||isAcct);
+ byId("keynote").classList.toggle("hidden",isAcct);
+ byId("acctnote").classList.toggle("hidden",!isAcct);
+ if(isAcct){const ok=accounts[p];byId("acctnote").textContent=t(p==="chatgpt"?"acctChatgptNote":"acctGoogleNote")+(ok===false?" "+t("acctMissing"):"");byId("acctnote").className="small"+(ok===false?" error":"");}
  byId("consentrow").classList.toggle("hidden",isLocal);
  byId("model").value=defaults[byId("provider").value]||"";
 }

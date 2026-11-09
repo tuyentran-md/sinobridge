@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     t = sub.add_parser("translate", help="Model translation (external services need --allow-external)")
     t.add_argument("--workspace", required=True, type=Path)
     t.add_argument("--provider", required=True, choices=list(PROVIDERS))
-    t.add_argument("--model", required=True)
+    t.add_argument("--model", default="", help="Model name; for chatgpt/google accounts omit it to use the account default")
     t.add_argument("--base-url", help="Override endpoint (required for openai-compatible)")
     t.add_argument("--max-segments", type=int, default=1, help="0 = all pending segments")
     t.add_argument("--allow-external", action="store_true", help="Permit sending text to a remote API")

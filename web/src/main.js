@@ -86,7 +86,7 @@ function renderLibrary(){
 function controls(){
   const p=state.project,working=state.working,done=p?count(p):0,complete=p&&done===p.segments.length;
   const prov=PROVIDERS[provider()];
-  const ready=prov.local?state.gpu===true:Boolean(apiKey());
+  const ready=prov.account?false:prov.local?state.gpu===true:Boolean(apiKey());
   el('start').disabled=!p||working||complete||!ready||!el('model').value.trim();
   el('start').textContent=working?'Đang dịch…':complete?'Đã dịch xong':done?'Dịch tiếp':'Bắt đầu dịch';
   el('stop').hidden=!working;
@@ -113,7 +113,7 @@ async function refreshModels(){
   const name=provider(),p=PROVIDERS[name],list=el('model-list');
   const fill=ids=>{list.replaceChildren(...ids.map(id=>{const o=document.createElement('option');o.value=id;return o;}));};
   fill(p.models);
-  if(p.local||!apiKey())return;
+  if(p.local||p.account||!apiKey())return;
   try{
     const ids=await listModels(name,apiKey());
     if(provider()!==name||!ids.length)return;
@@ -136,7 +136,10 @@ function note(message,warn=false){
 function applyProvider(){
   const name=provider(),p=PROVIDERS[name];
   prefs.set('provider',name);
-  el('key-block').hidden=Boolean(p.local);
+  el('key-block').hidden=Boolean(p.local||p.account);
+  el('account-block').hidden=!p.account;
+  el('model-block').hidden=Boolean(p.account);
+  if(p.account){controls();return;}
   if(!p.local){
     el('key-link').href=p.keyUrl;
     el('key-link').firstChild.textContent=p.keyLabel;
@@ -221,6 +224,9 @@ function setupDrop(){
 }
 async function init(){
   setupDrop();
+  const themeIcon=()=>el('theme').querySelector('use').setAttribute('href',document.documentElement.dataset.theme==='dark'?'#i-sun':'#i-moon');
+  themeIcon();
+  el('theme').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme!=='dark';if(dark)document.documentElement.dataset.theme='dark';else delete document.documentElement.dataset.theme;prefs.set('theme',dark?'dark':null);themeIcon();});
   el('try-sample').addEventListener('click',async e=>{
     e.stopPropagation();
     if(state.working)return;

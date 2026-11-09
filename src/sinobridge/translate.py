@@ -4,7 +4,10 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import ssl
+import subprocess
+import tempfile
 from urllib.error import HTTPError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
@@ -68,7 +71,13 @@ def parse_model_json(value: str) -> dict:
     value = value.strip()
     if value.startswith(chr(96)*3):
         value = re.sub(r"^"+chr(96)+r"{3}(?:json)?\s*|\s*"+chr(96)+r"{3}$", "", value).strip()
-    record = json.loads(value)
+    try:
+        record = json.loads(value)
+    except json.JSONDecodeError:
+        start, end = value.find("{"), value.rfind("}")   # CLI tools may wrap the object in prose
+        if start < 0 or end <= start:
+            raise
+        record = json.loads(value[start:end + 1])
     if not isinstance(record, dict) or not isinstance(record.get("translation"), str) or not record["translation"].strip():
         raise ValueError("Model returned no nonempty translation field")
     for key in ("ambiguities", "notes"):
@@ -90,7 +99,69 @@ PROVIDERS = {
     "ollama": ("http://localhost:11434/v1", None),
     "openai-compatible": (None, "HANVIET_API_KEY"),
     "gemini": ("https://generativelanguage.googleapis.com/v1beta", "GEMINI_API_KEY"),
+    # A signed-in consumer account through its official command-line tool; no API key.
+    "chatgpt": ("cli://codex", None),
+    "google": ("cli://agy", None),
 }
+
+# Account providers: the vendor's own CLI, run headless with the user's existing sign-in.
+ACCOUNT_CLI = {
+    "chatgpt": {"command": "codex", "login": "codex login",
+                "install": "https://developers.openai.com/codex/cli", "label": "ChatGPT account (Codex CLI)"},
+    "google": {"command": "agy", "login": "agy (sign in with Google on first run)",
+               "install": "https://antigravity.google", "label": "Google account (Antigravity CLI)"},
+}
+TRANSLATION_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "required": ["translation", "ambiguities", "notes", "entities"],
+    "properties": {
+        "translation": {"type": "string"},
+        "ambiguities": {"type": "array", "items": {"type": "string"}},
+        "notes": {"type": "array", "items": {"type": "string"}},
+        "entities": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["zh", "render", "type"],
+            "properties": {"zh": {"type": "string"}, "render": {"type": "string"}, "type": {"type": "string"}}}},
+    },
+}
+
+def account_status(provider: str) -> dict:
+    """Whether the account CLI is installed; sign-in is checked by the tool itself on first use."""
+    info = ACCOUNT_CLI[provider]
+    return {"provider": provider, "installed": shutil.which(info["command"]) is not None, **info}
+
+def call_account(provider: str, model: str, system: str, user_payload: str, timeout: int = 600) -> dict:
+    info = ACCOUNT_CLI[provider]
+    exe = shutil.which(info["command"])
+    if not exe:
+        raise RuntimeError(f"{info['label']}: {info['command']} is not installed. Install it ({info['install']}), "
+                           f"sign in once with `{info['login']}`, then try again.")
+    prompt = (system + "\n\nReturn only the JSON object described above, nothing else. Do not run commands or "
+              "edit files; this is a translation task.\n\nINPUT:\n" + user_payload)
+    chosen = model if model and model != "default" else None
+    with tempfile.TemporaryDirectory(prefix="sinobridge-") as tmp:   # empty, throwaway working directory
+        schema = Path(tmp, "schema.json")
+        schema.write_text(json.dumps(TRANSLATION_SCHEMA), encoding="utf-8")
+        if provider == "chatgpt":
+            out = Path(tmp, "answer.txt")
+            cmd = [exe, "exec", "--skip-git-repo-check", "--ephemeral", "--sandbox", "read-only",
+                   "-c", "project_doc_max_bytes=0", "--output-schema", str(schema), "-o", str(out), "-C", tmp]
+            if chosen:
+                cmd += ["-m", chosen]
+            run = subprocess.run(cmd + ["-"], input=prompt, capture_output=True, text=True, timeout=timeout, cwd=tmp)
+            answer = out.read_text(encoding="utf-8") if out.exists() else run.stdout
+        else:
+            cmd = [exe, "-p", prompt, "--output-format", "text", "--sandbox", "--disable-slash-commands",
+                   "--json-schema", str(schema), "--print-timeout", f"{timeout}s"]
+            if chosen:
+                cmd += ["--model", chosen]
+            run = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 30, cwd=tmp)
+            answer = run.stdout
+    if run.returncode != 0 and not answer.strip():
+        lines = (run.stderr or run.stdout).strip().splitlines()
+        detail = lines[-1][:300] if lines else ""
+        raise RuntimeError(f"{info['label']} failed (exit {run.returncode}): {detail}. "
+                           f"If you are not signed in, run `{info['login']}` once in a terminal.")
+    return parse_model_json(answer)
 
 def resolve_endpoint(provider: str, base_url: str | None) -> tuple[str, str | None, bool]:
     """Return (base URL, key env var, is_local). Local endpoints never leave this machine."""
@@ -111,6 +182,8 @@ def call_model(provider: str, model: str, source: str, context: str, kind: str, 
         "required_terminology": glossary, "suggested_names": suggested_names or {}, "source_chinese": source
     }, ensure_ascii=False)
     system = system_prompt(target)
+    if provider in ACCOUNT_CLI:
+        return call_account(provider, model, system, user_payload)
     base, key_env, local = resolve_endpoint(provider, base_url)
     # credential: key typed into the local web app, held in memory only; otherwise the environment
     key = credential if credential is not None else (os.getenv(key_env) if key_env else None)
@@ -157,7 +230,7 @@ def translate(workspace: Path, provider: str, model: str, *, allow_external: boo
     if not local and not allow_external:
         raise RuntimeError(f"Sending text to {base} is OFF. Use --allow-external after verifying document "
                            "rights/privacy, or use a local model (--provider ollama).")
-    if not model:
+    if not model and provider not in ACCOUNT_CLI:
         raise ValueError("Specify an accessible --model")
     completed = 0
     for i in to_do:

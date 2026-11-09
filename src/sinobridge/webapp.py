@@ -22,14 +22,14 @@ import webbrowser
 
 from .ingest import ingest
 from .store import load_project, load_segments
-from .translate import translate, PROVIDERS
+from .translate import translate, PROVIDERS, ACCOUNT_CLI, account_status
 from .qa import audit
 from .review import review_html
 from . import export as outputs
 
 MAX_FILE = 64 * 1024 * 1024
 SUPPORTED = {".txt", ".md", ".markdown", ".docx", ".epub", ".pdf", ".html", ".htm", ".srt", ".vtt"}
-API_PROVIDERS = ("gemini", "openai", "deepseek", "qwen", "openrouter", "ollama")
+API_PROVIDERS = ("gemini", "openai", "deepseek", "qwen", "openrouter", "ollama", "chatgpt", "google")
 IDENT = re.compile(r"^[a-f0-9]{16}$")
 DEFAULT_HOME = Path.home() / ".sinobridge" / "projects"
 
@@ -110,9 +110,17 @@ class LocalApp:
         folder = self.workspace(uid)
         if provider not in API_PROVIDERS or provider not in PROVIDERS:
             raise ValueError("Unsupported model provider")
+        account = provider in ACCOUNT_CLI
+        if account and not model:
+            model = "default"
         if not model or len(model) > 120 or not re.fullmatch(r"[A-Za-z0-9._:/-]+", model):
             raise ValueError("Enter a valid model ID")
-        if provider != "ollama" and not credential:
+        if account and not account_status(provider)["installed"]:
+            info = ACCOUNT_CLI[provider]
+            raise ValueError(f"{info['label']}: install {info['command']} and sign in once ({info['login']})")
+        if account:
+            credential = None
+        elif provider != "ollama" and not credential:
             raise ValueError("Enter your own provider API key")
         if credential and len(credential) > 4000:
             raise ValueError("API key too long")
@@ -236,6 +244,8 @@ def make_handler(app: LocalApp, port: int):
                 uid = q.get("id", [""])[0]
                 if url.path == "/api/projects":
                     self._json({"projects": app.list_projects()})
+                elif url.path == "/api/accounts":
+                    self._json({name: account_status(name)["installed"] for name in ACCOUNT_CLI})
                 elif url.path == "/api/status":
                     self._json(app.describe(uid))
                 elif url.path == "/api/preview":

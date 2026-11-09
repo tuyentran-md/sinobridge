@@ -4,6 +4,7 @@
 // through a SinoBridge server. Local: an open-weight model on WebGPU via WebLLM, no key.
 
 export const PROVIDERS = {
+  account: { label: 'Tài khoản ChatGPT / Google', account: true, models: [] },
   gemini: {
     label: 'Google Gemini', base: 'https://generativelanguage.googleapis.com/v1beta/openai',
     models: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'],

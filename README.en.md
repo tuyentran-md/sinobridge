@@ -48,6 +48,21 @@ The interface works in English and Vietnamese. Files are stored in the .sinobrid
 
 For installation help, see [the quickstart guide](docs/quickstart-gui.md). CLI users can run the sinobridge serve --open command.
 
+## Use your ChatGPT or Google account
+
+No API key but you have an account? The local app can use the account you already have, through the vendor's official command-line tool:
+
+| Choose in the app | Tool to install | Sign in once |
+|---|---|---|
+| ChatGPT account (Plus, Pro, Team…) | [Codex CLI](https://developers.openai.com/codex/cli) | run codex login |
+| Google account (free or Google AI Pro) | [Antigravity CLI](https://antigravity.google) (agy) | run agy and sign in with Google |
+
+Then pick "ChatGPT account" or "Google / Gemini account" as the provider and leave Model empty for the account default. CLI: sinobridge translate --provider chatgpt --allow-external (or --provider google).
+
+- Text still goes to OpenAI or Google, so the app still asks for consent. Usage counts against your plan's limits.
+- SinoBridge runs the tool in an empty temporary folder, read-only, and asks for a single JSON object with the translation.
+- The GitHub Pages web demo cannot do this: a browser cannot run local tools, and ChatGPT/Google AI Pro plans do not expose an API to other sites. On the web, use an API key (Gemini has a free tier; you only pay if you enable billing yourself).
+
 ## Install (command line)
 
 Python 3.10+.

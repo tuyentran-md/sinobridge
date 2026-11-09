@@ -223,8 +223,8 @@ body.dragging .reader::after{content:"";position:absolute;inset:14px;border:2px 
    Editorial reading room, warm xuan paper, restrained ink wash and cinnabar seal.
    Deliberately replaces the lacquer-first visual system without altering the controls. */
 :root{
-  --bar:#faf8f0;--bar-fg:#26352e;--bar-fg-2:#68766c;
-  --lac-0:#f4f2e9;--lac-1:#f4f1e8;--lac-2:#faf9f4;--lac-3:#fffefa;--lac-4:#e9e7dd;
+  --bar:#fbfbf9;--bar-fg:#26352e;--bar-fg-2:#68766c;
+  --lac-0:#f6f6f3;--lac-1:#f7f7f4;--lac-2:#fafaf8;--lac-3:#ffffff;--lac-4:#e9eae4;
   --rule:#dadcd1;--rule-soft:#e5e7dc;--hover-line:#abb9ab;--solid-hover:#dedfd4;
   --egg:#27382f;--egg-2:#52645a;--egg-3:#79867b;
   --cinnabar:#a43e34;--cinnabar-hi:#8f3028;--cinnabar-deep:#edd0c9;--on-cinnabar:#fffcf4;
@@ -293,20 +293,20 @@ input{caret-color:var(--cinnabar)}
 .downloads .btn{padding:10px 4px;font-size:.82rem}
 .account{background:#e9eae2;border:1px solid #dce1d7}
 .note{color:var(--egg-3)}
-.reader{background:#faf9f4}
+.reader{background:var(--lac-2)}
 .welcome{
   position:relative;isolation:isolate;align-items:stretch;gap:clamp(18px,3.6vh,34px);
-  padding:clamp(28px,5vh,64px) clamp(28px,6.7vw,106px) 27px;
+  padding:clamp(28px,5vh,64px) clamp(28px,6.7vw,106px) clamp(160px,14vw,220px);
   min-height:100%;justify-content:center;overflow:hidden;
 }
 .welcome::before{
   content:"";position:absolute;z-index:-2;inset:0;
-  background:url("../ink-landscape.svg") right bottom/cover no-repeat;
-  opacity:.94;pointer-events:none;
+  background:url("./assets/sinobridge-background.webp") center bottom/100% auto no-repeat;
+  opacity:1;pointer-events:none;
 }
 .welcome::after{
   content:"";position:absolute;z-index:-2;inset:0;
-  background:linear-gradient(90deg,#faf9f4 0%,#faf9f4f0 26%,#faf9f480 44%,#faf9f400 62%);
+  background:none;
   pointer-events:none;
 }
 .welcome-intro{max-width:900px}
@@ -412,7 +412,7 @@ input{caret-color:var(--cinnabar)}
   .rail{overflow:visible;border-right:0;border-bottom:1px solid var(--rule)}
   .block{padding:14px 24px}
   .reader{overflow:visible;min-height:60vh}
-  .welcome{min-height:620px;padding:44px 30px 26px;gap:24px}
+  .welcome{min-height:620px;padding:44px 30px 160px;gap:24px}
   .welcome-title h1{font-size:clamp(2.3rem,7vw,3.8rem)}
   .drop{display:flex}
   .drop-actions{margin-left:0}
@@ -424,9 +424,9 @@ input{caret-color:var(--cinnabar)}
   .bar-nav a{font-size:.76rem}
   .brand{gap:7px}
   .seal{width:28px;height:28px;font-size:17px}
-  .welcome{min-height:0;padding:45px 22px 32px;gap:24px}
-  .welcome::before{background-position:57% bottom;opacity:.55}
-  .welcome::after{background:linear-gradient(180deg,#faf9f4eb 0%,#faf9f4de 53%,#faf9f4bb)}
+  .welcome{min-height:0;padding:45px 22px 130px;gap:24px}
+  .welcome::before{background-position:center bottom;opacity:.85}
+  .welcome::after{background:none}
   .welcome-kicker{font-size:.57rem;letter-spacing:.11em;margin-bottom:22px}
   .kicker-line{width:18px}
   .welcome-title h1{font-size:clamp(2.12rem,8.8vw,3rem)}

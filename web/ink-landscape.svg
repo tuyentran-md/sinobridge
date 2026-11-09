@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="#faf8f1" stop-opacity="0"/><stop offset=".52" stop-color="#faf8f1" stop-opacity=".06"/><stop offset="1" stop-color="#f4f0e6" stop-opacity=".14"/></linearGradient>
+  <linearGradient id="peak" x1="0" y1="0" x2=".45" y2="1"><stop stop-color="#71877f" stop-opacity=".20"/><stop offset=".62" stop-color="#a5b0a5" stop-opacity=".13"/><stop offset="1" stop-color="#b8c3b6" stop-opacity="0"/></linearGradient>
+  <linearGradient id="near" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#536a63" stop-opacity=".18"/><stop offset="1" stop-color="#8a988a" stop-opacity="0"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#be6348" stop-opacity=".19"/><stop offset=".6" stop-color="#c1785c" stop-opacity=".10"/><stop offset="1" stop-color="#b46f53" stop-opacity="0"/></radialGradient>
+  <filter id="wash"><feGaussianBlur stdDeviation="17"/></filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<rect width="1440" height="900" fill="url(#fade)"/>
+<circle cx="1150" cy="235" r="180" fill="url(#sun)"/>
+<circle cx="1150" cy="235" r="83" fill="#c67f61" opacity=".065"/>
+<!-- Distant ink wash, with the quiet asymmetry of a handscroll -->
+<g filter="url(#wash)">
+  <path d="M300 725C424 620 504 638 612 548c85-74 110-174 162-180 43-5 86 96 123 113 63 29 102-128 182-142 52-9 103 69 159 151 64 94 119 94 208 125v300H300Z" fill="url(#peak)"/>
+  <path d="M620 739c101-81 169-122 241-120 68 2 104-102 179-132 87-35 133 64 202 96 65 29 131 19 202 65v230H620Z" fill="#71877f" opacity=".11"/>
+</g>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M466 718c130-86 229-84 314-221 30-48 59-92 77-95 25-4 58 87 87 91 39 7 67-102 114-116 41-11 98 92 140 139" stroke="#5f756e" stroke-opacity=".20" stroke-width="2.2"/>
+  <path d="M674 713c145-78 251-107 328-174 59-50 92-65 135-47 38 16 89 92 171 104" stroke="#819187" stroke-opacity=".13" stroke-width="2"/>
+  <path d="M800 562c25-25 44-54 57-82m151 40c17-21 29-44 42-72" stroke="#6b7c72" stroke-opacity=".12" stroke-width="5" filter="url(#soft)"/>
+</g>
+<path d="M300 789c97-39 174-65 260-50 120 23 209-16 338-57 99-32 183-28 271-5 103 27 174 40 272 3v225H300Z" fill="url(#near)" opacity=".6"/>
+<path d="M500 778q175-21 345-8t340-3" stroke="#688076" stroke-width="2" opacity=".13" fill="none"/>
+<path d="M760 800q210-13 434-3m-275 21q124 3 282-2" stroke="#779087" opacity=".13" fill="none"/>
+<!-- Tiny bridge and pavilion, resting in the lower right landscape -->
+<g transform="translate(1046 646)" fill="none" stroke="#465c52" stroke-width="2.6" stroke-linecap="round" opacity=".26">
+  <path d="M0 62Q72-11 153 62M-8 64H161M18 54l-4 23m130-23 4 23"/>
+  <path d="M40 60v-34m12 34V17m83 43V17m12 43V26M30 26l70-36 59 36M45 25h110M44 31v26m105-26v26" stroke-width="2"/>
+  <path d="M68 57V31m58 26V31"/>
+</g>
+<!-- Brush-painted bamboo enters from the upper right edge -->
+<g transform="translate(1320 34)" fill="none" stroke="#687e72" stroke-linecap="round" opacity=".33">
+  <path d="M92-32C65 98 34 189 4 329M150 26C116 131 80 216 40 303" stroke-width="4"/>
+  <path d="M76 84C28 61-4 38-21 15M62 129c-47-6-85-31-109-61M41 209c-59-3-97-20-130-52M52 175c46-21 83-37 120-42M19 260c47-5 77-3 108 16" stroke-width="1.7"/>
+  <g fill="#75887a" stroke="none" opacity=".55">
+    <path d="M65 79Q20 42-19 25q34 37 84 54ZM62 130Q10 97-49 70q36 45 111 60ZM43 207Q-13 179-84 157q46 46 127 50ZM52 175q46-49 111-42-50 31-111 42ZM20 257q62-25 107 17-51-5-107-17Z"/>
+  </g>
+</g>
+</svg>

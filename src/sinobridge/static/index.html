@@ -46,6 +46,64 @@ input[type=checkbox]{accent-color:var(--accent);height:16px;width:16px;flex:none
 #consentrow,.row.check{flex-wrap:nowrap;align-items:flex-start;gap:10px}#consentrow label,.row.check label{flex:1;min-width:0}
 details summary{cursor:pointer;font-size:.84rem;color:var(--muted)}
 @media(max-width:860px){.layout{grid-template-columns:1fr}.wrap{padding:30px 17px}.top-in{padding:14px 17px}.card{padding:19px}.fields{grid-template-columns:1fr}}
+
+/* SinoBridge — xuan paper design shared with web edition */
+:root{
+  --ink:#273b30;--muted:#637568;--line:#d9dfd4;--accent:#a43e34;
+  --cream:#f6f4eb;--paper:#fdfbf5;--good:#416c4d;--warn:#ad553d
+}
+body{background:#f6f4eb;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Be Vietnam Pro",sans-serif;font-size:15px}
+.top{background:#fbf9f3;border-bottom:1px solid #d7ded2;box-shadow:0 1px 6px #3246310c}
+.top-in{max-width:1380px;padding:18px clamp(24px,4vw,54px)}
+.brand{font:500 1.6rem/1 Georgia,serif;letter-spacing:-.065em;display:flex;align-items:center;gap:10px}
+.brand::before{content:"譯";display:grid;place-items:center;width:34px;height:34px;background:#a43e34;color:#fff9e8;border-radius:3px;font:500 20px/1 "Songti SC",serif;transform:rotate(-2deg)}
+.brand span{color:#a43e34}
+.tag{background:transparent;border-radius:0;padding:5px 0;font-size:.75rem;letter-spacing:.02em;font-weight:500;color:#788b7a}
+.tag::before{content:"◆";color:var(--accent);margin-right:8px;font-size:.6rem}
+#uilang{border-radius:5px!important}
+.wrap{max-width:1380px;margin:auto;padding:clamp(32px,4.6vw,68px) clamp(24px,4vw,54px) 80px;position:relative;isolation:isolate}
+.wrap::before{content:"";position:absolute;inset:0 0 auto 18%;height:590px;z-index:-1;pointer-events:none;opacity:.64;background-image:linear-gradient(90deg,#f6f4ebdf,transparent 80%),url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20viewBox%3D%220%200%201440%20900%22%20preserveAspectRatio%3D%22xMidYMid%20slice%22%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%22fade%22%20x1%3D%220%22%20x2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23faf8f1%22%20stop-opacity%3D%220%22/%3E%3Cstop%20offset%3D%22.52%22%20stop-color%3D%22%23faf8f1%22%20stop-opacity%3D%22.06%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23f4f0e6%22%20stop-opacity%3D%22.14%22/%3E%3C/linearGradient%3E%0A%20%20%3ClinearGradient%20id%3D%22peak%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%22.45%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%2371877f%22%20stop-opacity%3D%22.20%22/%3E%3Cstop%20offset%3D%22.62%22%20stop-color%3D%22%23a5b0a5%22%20stop-opacity%3D%22.13%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23b8c3b6%22%20stop-opacity%3D%220%22/%3E%3C/linearGradient%3E%0A%20%20%3ClinearGradient%20id%3D%22near%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23536a63%22%20stop-opacity%3D%22.18%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238a988a%22%20stop-opacity%3D%220%22/%3E%3C/linearGradient%3E%0A%20%20%3CradialGradient%20id%3D%22sun%22%3E%3Cstop%20stop-color%3D%22%23be6348%22%20stop-opacity%3D%22.19%22/%3E%3Cstop%20offset%3D%22.6%22%20stop-color%3D%22%23c1785c%22%20stop-opacity%3D%22.10%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23b46f53%22%20stop-opacity%3D%220%22/%3E%3C/radialGradient%3E%0A%20%20%3Cfilter%20id%3D%22wash%22%3E%3CfeGaussianBlur%20stdDeviation%3D%2217%22/%3E%3C/filter%3E%0A%20%20%3Cfilter%20id%3D%22soft%22%3E%3CfeGaussianBlur%20stdDeviation%3D%223%22/%3E%3C/filter%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%221440%22%20height%3D%22900%22%20fill%3D%22url%28%23fade%29%22/%3E%0A%3Ccircle%20cx%3D%221150%22%20cy%3D%22235%22%20r%3D%22180%22%20fill%3D%22url%28%23sun%29%22/%3E%0A%3Ccircle%20cx%3D%221150%22%20cy%3D%22235%22%20r%3D%2283%22%20fill%3D%22%23c67f61%22%20opacity%3D%22.065%22/%3E%0A%3C%21--%20Distant%20ink%20wash%2C%20with%20the%20quiet%20asymmetry%20of%20a%20handscroll%20--%3E%0A%3Cg%20filter%3D%22url%28%23wash%29%22%3E%0A%20%20%3Cpath%20d%3D%22M300%20725C424%20620%20504%20638%20612%20548c85-74%20110-174%20162-180%2043-5%2086%2096%20123%20113%2063%2029%20102-128%20182-142%2052-9%20103%2069%20159%20151%2064%2094%20119%2094%20208%20125v300H300Z%22%20fill%3D%22url%28%23peak%29%22/%3E%0A%20%20%3Cpath%20d%3D%22M620%20739c101-81%20169-122%20241-120%2068%202%20104-102%20179-132%2087-35%20133%2064%20202%2096%2065%2029%20131%2019%20202%2065v230H620Z%22%20fill%3D%22%2371877f%22%20opacity%3D%22.11%22/%3E%0A%3C/g%3E%0A%3Cg%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%20%20%3Cpath%20d%3D%22M466%20718c130-86%20229-84%20314-221%2030-48%2059-92%2077-95%2025-4%2058%2087%2087%2091%2039%207%2067-102%20114-116%2041-11%2098%2092%20140%20139%22%20stroke%3D%22%235f756e%22%20stroke-opacity%3D%22.20%22%20stroke-width%3D%222.2%22/%3E%0A%20%20%3Cpath%20d%3D%22M674%20713c145-78%20251-107%20328-174%2059-50%2092-65%20135-47%2038%2016%2089%2092%20171%20104%22%20stroke%3D%22%23819187%22%20stroke-opacity%3D%22.13%22%20stroke-width%3D%222%22/%3E%0A%20%20%3Cpath%20d%3D%22M800%20562c25-25%2044-54%2057-82m151%2040c17-21%2029-44%2042-72%22%20stroke%3D%22%236b7c72%22%20stroke-opacity%3D%22.12%22%20stroke-width%3D%225%22%20filter%3D%22url%28%23soft%29%22/%3E%0A%3C/g%3E%0A%3Cpath%20d%3D%22M300%20789c97-39%20174-65%20260-50%20120%2023%20209-16%20338-57%2099-32%20183-28%20271-5%20103%2027%20174%2040%20272%203v225H300Z%22%20fill%3D%22url%28%23near%29%22%20opacity%3D%22.6%22/%3E%0A%3Cpath%20d%3D%22M500%20778q175-21%20345-8t340-3%22%20stroke%3D%22%23688076%22%20stroke-width%3D%222%22%20opacity%3D%22.13%22%20fill%3D%22none%22/%3E%0A%3Cpath%20d%3D%22M760%20800q210-13%20434-3m-275%2021q124%203%20282-2%22%20stroke%3D%22%23779087%22%20opacity%3D%22.13%22%20fill%3D%22none%22/%3E%0A%3C%21--%20Tiny%20bridge%20and%20pavilion%2C%20resting%20in%20the%20lower%20right%20landscape%20--%3E%0A%3Cg%20transform%3D%22translate%281046%20646%29%22%20fill%3D%22none%22%20stroke%3D%22%23465c52%22%20stroke-width%3D%222.6%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.26%22%3E%0A%20%20%3Cpath%20d%3D%22M0%2062Q72-11%20153%2062M-8%2064H161M18%2054l-4%2023m130-23%204%2023%22/%3E%0A%20%20%3Cpath%20d%3D%22M40%2060v-34m12%2034V17m83%2043V17m12%2043V26M30%2026l70-36%2059%2036M45%2025h110M44%2031v26m105-26v26%22%20stroke-width%3D%222%22/%3E%0A%20%20%3Cpath%20d%3D%22M68%2057V31m58%2026V31%22/%3E%0A%3C/g%3E%0A%3C%21--%20Brush-painted%20bamboo%20enters%20from%20the%20upper%20right%20edge%20--%3E%0A%3Cg%20transform%3D%22translate%281320%2034%29%22%20fill%3D%22none%22%20stroke%3D%22%23687e72%22%20stroke-linecap%3D%22round%22%20opacity%3D%22.33%22%3E%0A%20%20%3Cpath%20d%3D%22M92-32C65%2098%2034%20189%204%20329M150%2026C116%20131%2080%20216%2040%20303%22%20stroke-width%3D%224%22/%3E%0A%20%20%3Cpath%20d%3D%22M76%2084C28%2061-4%2038-21%2015M62%20129c-47-6-85-31-109-61M41%20209c-59-3-97-20-130-52M52%20175c46-21%2083-37%20120-42M19%20260c47-5%2077-3%20108%2016%22%20stroke-width%3D%221.7%22/%3E%0A%20%20%3Cg%20fill%3D%22%2375887a%22%20stroke%3D%22none%22%20opacity%3D%22.55%22%3E%0A%20%20%20%20%3Cpath%20d%3D%22M65%2079Q20%2042-19%2025q34%2037%2084%2054ZM62%20130Q10%2097-49%2070q36%2045%20111%2060ZM43%20207Q-13%20179-84%20157q46%2046%20127%2050ZM52%20175q46-49%20111-42-50%2031-111%2042ZM20%20257q62-25%20107%2017-51-5-107-17Z%22/%3E%0A%20%20%3C/g%3E%0A%3C/g%3E%0A%3C/svg%3E");background-size:cover;background-position:center right}
+.eyebrow{color:#a35d4e;font-size:.7rem;letter-spacing:.19em;font-weight:650;padding-left:43px;position:relative}
+.eyebrow::before{content:"";position:absolute;top:50%;left:0;width:28px;height:1px;background:#a43e34}
+h1{font:500 clamp(2.6rem,4.3vw,5rem)/1.18 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:860px;letter-spacing:-.065em;color:#263c30;margin:20px 0 18px;text-wrap:balance}
+.lede{max-width:690px;color:#52665a;font-size:1.02rem;line-height:1.85;margin-bottom:42px}
+.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.82fr);gap:clamp(30px,5vw,80px)}
+.card{background:transparent;box-shadow:none;border:0;border-bottom:1px solid #d7dfd5;border-radius:0;padding:22px 0 31px;margin-bottom:4px}
+.card:first-child{border-top:1px solid #d7dfd5}
+.card h2{font-size:1.02rem;font-weight:650;gap:14px;color:#34483a;margin:0 0 20px}
+.number{background:#a43e34;width:27px;height:27px;border-radius:3px;font:500 .82rem/1 Georgia,serif;transform:rotate(-2deg)}
+.layout aside{background:#f9f8f0a8;border-left:1px solid #dfe4d8;padding:0 clamp(20px,2vw,32px)}
+.layout aside .card:first-child{border-top:0}
+.drop{background:#fbfcf5d9;border:1px solid #bbc9b8;outline:1px solid #fff;outline-offset:-5px;border-radius:6px;min-height:164px;box-shadow:0 9px 30px #4454470d;gap:9px}
+.drop.drag{background:#e8efe5;border-color:#7d9983}
+.drop strong{font-weight:600;font-size:.98rem;color:#2f4537}
+.drop small{font-size:.78rem;color:#728373}
+.file-ico{font:500 2rem/1.2 "Songti SC",serif;color:#78907b}
+.pill{border:1px solid #c7cebf;background:#f3f2e9;color:#a43e34;border-radius:5px;margin-top:8px;padding:9px 20px}
+.pill:hover{border-color:#a43e34}
+select,input[type=text],input[type=password]{border:1px solid #cfd8cc;border-radius:6px;background:#fffefa;outline-color:#a43e34;min-height:44px;font-size:.87rem;color:#273b30}
+.field label{color:#51665a;font-weight:550}
+button.primary{background:#a43e34;border-radius:5px;box-shadow:0 3px 14px #a43e341d;padding:12px 24px}
+button.primary:hover{background:#8f3028}
+button.ghost{border-radius:5px;border-color:#c5d1c3;background:#fbfaf3;color:#5c705f}
+button.ghost:hover{border-color:#a43e34;color:#a43e34}
+#notice.good{color:#466d50}
+.file{background:#e9ede5;border-radius:4px;color:#4c6a56}
+.progress{height:5px;background:#e1e7dd;border-radius:0}
+.progress div{background:#91a789}
+.down button{border:1px solid #c5d0c3;border-radius:5px;color:#5b705f;background:#fdfcf7;padding:10px 14px}
+.down button:hover{border-color:#a43e34;color:#a43e34}
+.preview{background:#fdfcf6d1;border:1px solid #d9e1d6;border-radius:4px;max-height:620px;padding:20px}
+.preview .zh{color:#465f50;font-size:.92rem;line-height:1.8}
+.placeholder{color:#8c9b8c;min-height:180px}
+.library-item{border:0;border-bottom:1px solid #dde3d8;background:transparent;border-radius:0;padding:12px 6px}
+.library-item:hover{background:#eaf0e8}
+.library-item.active{background:#e5efe5;border-color:#a0b69f}
+hr{background:#d9e1d6}
+.footer{font-size:.78rem;color:#819183}
+@media(max-width:980px){.layout{grid-template-columns:1fr;gap:0}.layout aside{padding:0;border-left:0;background:transparent}.wrap{padding:35px 25px 65px}.wrap::before{opacity:.35}.card{padding-top:24px;padding-bottom:26px}}
+@media(max-width:600px){h1{font-size:clamp(2.25rem,8vw,3.2rem)}.lede{font-size:.92rem}.top-in{padding:14px 16px}.brand{font-size:1.35rem}.brand::before{width:28px;height:28px;font-size:17px}.tag{display:none}.wrap{padding:30px 19px 60px}.fields{grid-template-columns:1fr}.drop{padding:20px 14px}.layout{gap:0}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -61,7 +119,7 @@ details summary{cursor:pointer;font-size:.84rem;color:var(--muted)}
 <section class="card">
 <h2><span class="number">1</span> <span data-i18n="step1"></span></h2>
 <div class="drop" id="drop" tabindex="0" role="button" data-i18n-aria="dropAria">
-<div class="file-ico" aria-hidden="true">▤</div><strong data-i18n="dropHere"></strong><small data-i18n="formats"></small>
+<div class="file-ico" aria-hidden="true">書</div><strong data-i18n="dropHere"></strong><small data-i18n="formats"></small>
 <button type="button" class="pill" id="pick" data-i18n="pick"></button>
 <input id="fileinput" type="file" class="hidden" accept=".pdf,.epub,.docx,.txt,.md,.markdown,.html,.htm,.srt,.vtt">
 </div>
@@ -117,7 +175,7 @@ let selected=null, poller=null;
 const defaults={chatgpt:"",google:"",gemini:"gemini-2.5-flash",openai:"gpt-4.1-mini",deepseek:"deepseek-chat",qwen:"qwen-plus",openrouter:"",ollama:"qwen2.5:7b"};
 const STR={
 vi:{tag:"Mã nguồn mở · Dùng API của bạn",eyebrow:"DỊCH SÁCH VÀ TÀI LIỆU TIẾNG TRUNG",
- h1:"Dịch tài liệu tiếng Trung<br>sang tiếng Việt hoặc tiếng Anh.",lede:"Thêm file PDF, EPUB hoặc Word. Chọn ngôn ngữ và model bạn muốn dùng, rồi bắt đầu dịch. Khi hoàn tất, bạn có thể tải bản dịch hoặc mở bản song ngữ để đối chiếu.",
+ h1:"Đọc tiếng Trung,<br>không còn xa lạ.",lede:"Từ sách, truyện đến tài liệu nghiên cứu. Chọn một tệp, dịch bằng model của bạn và đọc từng đoạn song song với nguyên tác.",
  step1:"Thêm tài liệu",dropAria:"Kéo thả hoặc chọn tài liệu từ máy",dropHere:"Kéo thả tài liệu vào đây",formats:"EPUB, PDF, Word, TXT, HTML, phụ đề · tối đa 64 MB",pick:"Chọn từ máy",
  targetLabel:"Dịch sang",toVi:"Tiếng Việt",toEn:"Tiếng Anh (English)",kindLabel:"Loại tài liệu",kindBook:"Sách hoặc tài liệu",kindPaper:"Bài báo nghiên cứu",
  step2:"Chọn model để dịch",provider:"Dịch vụ AI",ollama:"Ollama (chạy trên máy)",acctChatgpt:"Tài khoản ChatGPT (không cần API key)",acctGoogle:"Tài khoản Google / Gemini (không cần API key)",acctChatgptNote:"Dùng gói ChatGPT bạn đang có, qua Codex CLI của OpenAI trên máy này. Đăng nhập một lần bằng lệnh codex login. Để trống ô Model để dùng model mặc định của tài khoản.",acctGoogleNote:"Dùng tài khoản Google (gói miễn phí hoặc Google AI Pro), qua Antigravity CLI (agy) trên máy này. Chạy agy một lần để đăng nhập. Để trống ô Model để dùng model mặc định.",acctMissing:"Máy này chưa cài công cụ đó.",model:"Model",modelPh:"Nhập tên model",key:"API key của bạn",keyPh:"Dán API key của dịch vụ đã chọn",
@@ -137,7 +195,7 @@ vi:{tag:"Mã nguồn mở · Dùng API của bạn",eyebrow:"DỊCH SÁCH VÀ T�
  needConsent:"Bạn cần đồng ý gửi nội dung cho dịch vụ AI trước khi dịch.",working:"Đã bắt đầu dịch. API key chỉ được giữ trong bộ nhớ trong lúc chạy.",stopNote:"Đang dừng sau đoạn đang dịch.",
  exportFail:"Không tạo được file tải về",to:"→ "},
 en:{tag:"Open source · Bring your own API",eyebrow:"TRANSLATE CHINESE BOOKS AND DOCUMENTS",
- h1:"Translate Chinese documents<br>into English or Vietnamese.",lede:"Add a PDF, EPUB or Word file. Choose a language and a model you already use, then translate. Download the result or open the bilingual view to compare it with the original.",
+ h1:"Read Chinese books and documents,<br>in your own language.",lede:"From books and fiction to research papers. Bring a file, translate with your model, and read every passage alongside its Chinese original.",
  step1:"Add a document",dropAria:"Drop a document or choose a file",dropHere:"Drop your document here",formats:"EPUB, PDF, Word, TXT, HTML, subtitles · up to 64 MB",pick:"Browse files",
  targetLabel:"Translate into",toVi:"Vietnamese (Tiếng Việt)",toEn:"English",kindLabel:"Document type",kindBook:"Book or document",kindPaper:"Research paper",
  step2:"Choose a model",provider:"AI provider",ollama:"Ollama (runs locally)",acctChatgpt:"ChatGPT account (no API key)",acctGoogle:"Google / Gemini account (no API key)",acctChatgptNote:"Uses your existing ChatGPT plan through OpenAI's Codex CLI on this computer. Sign in once with: codex login. Leave Model empty to use the account default.",acctGoogleNote:"Uses your Google account (free or Google AI Pro) through the Antigravity CLI (agy) on this computer. Run agy once to sign in. Leave Model empty to use the default.",acctMissing:"That tool is not installed on this computer.",model:"Model",modelPh:"Enter a model name",key:"Your API key",keyPh:"Paste your API key for this provider",

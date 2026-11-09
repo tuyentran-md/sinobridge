@@ -80,7 +80,7 @@ try:
         page.on("request", lambda r: hosts.add(r.url.split("/")[2]))
         page.goto(URL, wait_until="domcontentloaded")
         assert "SinoBridge" in page.title()
-        assert page.get_by_role("heading", name="Thả tài liệu tiếng Trung vào đây").is_visible()
+        assert page.get_by_role("heading", name="Đọc tiếng Trung, không còn xa lạ.").is_visible()
 
         # Import a file: the bilingual reader replaces the welcome screen.
         page.locator("#file").set_input_files(str(ROOT / "examples" / "synthetic_zh.md"))

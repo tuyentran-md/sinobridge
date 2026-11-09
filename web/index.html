@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#1b1210">
+<meta name="theme-color" content="#f8f5ec">
 <script>try{if(localStorage.getItem("sb-theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <meta name="description" content="Dịch sách và tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh, đọc song song với bản gốc. Chạy trong trình duyệt, dùng key Gemini miễn phí hoặc model của bạn.">
 <title>SinoBridge — Dịch tài liệu tiếng Trung</title>
@@ -19,7 +19,7 @@
 </svg>
 
 <header class="bar">
-  <a class="brand" href="./" aria-label="SinoBridge"><span class="seal" aria-hidden="true">译</span>SinoBridge</a>
+  <a class="brand" href="./" aria-label="SinoBridge"><span class="seal" aria-hidden="true">譯</span><span class="brand-word">Sino<span>Bridge</span></span><span class="brand-sub">中文 · VI · EN</span></a>
   <p class="doc" id="current" hidden></p>
   <nav class="bar-nav"><a href="#faq">Hỏi đáp</a><button class="theme" id="theme" type="button" aria-label="Đổi nền sáng/tối"><svg class="ic"><use href="#i-moon"/></svg></button><a href="https://github.com/tuyentran-md/sinobridge" rel="noopener" target="_blank">GitHub</a></nav>
 </header>
@@ -27,14 +27,14 @@
 <div class="workspace">
   <aside class="rail" aria-label="Điều khiển">
     <section class="block" aria-labelledby="h-doc">
-      <div class="block-head"><h2 id="h-doc">Tài liệu</h2><button id="pick" type="button" class="btn ghost small"><svg class="ic"><use href="#i-up"/></svg>Chọn file</button></div>
+      <div class="block-head"><h2 id="h-doc"><span>01</span> Tài liệu</h2><button id="pick" type="button" class="btn ghost small"><svg class="ic"><use href="#i-up"/></svg>Chọn file</button></div>
       <input hidden id="file" type="file" accept=".txt,.md,.markdown,.epub,.pdf,.docx,.html,.htm">
       <div id="library" class="library"></div>
       <button id="library-more" class="linklike more" type="button" hidden></button>
     </section>
 
     <section class="block" aria-labelledby="h-model">
-      <h2 id="h-model">Model</h2>
+      <h2 id="h-model"><span>02</span> Công cụ dịch</h2>
       <label class="field"><span>Dịch bằng</span>
         <select id="provider">
           <option value="account">Tài khoản ChatGPT / Google · không cần key</option>
@@ -70,7 +70,7 @@
       </fieldset>
     </section>
 
-    <section class="block run" aria-label="Dịch">
+    <section class="block run" aria-label="Dịch"><h2><span>03</span> Bắt đầu dịch</h2>
       <div class="run-buttons">
         <button id="start" class="btn primary" type="button" disabled>Bắt đầu dịch</button>
         <button id="stop" class="btn ghost" type="button" hidden>Dừng</button>
@@ -80,7 +80,7 @@
     </section>
 
     <section class="block" aria-labelledby="h-out">
-      <h2 id="h-out">Tải về</h2>
+      <h2 id="h-out"><span>04</span> Tải bản dịch</h2>
       <div class="downloads">
         <button data-export="epub" type="button" class="btn solid" disabled><svg class="ic"><use href="#i-down"/></svg>EPUB</button>
         <button data-export="docx" type="button" class="btn solid" disabled><svg class="ic"><use href="#i-down"/></svg>Word</button>
@@ -93,16 +93,28 @@
 
   <main class="reader" id="reader" aria-label="Bản gốc và bản dịch">
     <div class="welcome" id="welcome">
+      <div class="welcome-intro">
+        <p class="welcome-kicker"><span class="kicker-line" aria-hidden="true"></span> SINO<span>BRIDGE</span> · THƯ VIỆN NGÔN NGỮ</p>
+        <div class="welcome-title">
+          <h1>Đọc tiếng Trung,<br><em>không còn xa lạ.</em></h1>
+          <span class="side-script" lang="zh" aria-hidden="true">讀<br>與<br>譯</span>
+        </div>
+        <p class="welcome-deck">Từ sách, truyện đến tài liệu nghiên cứu. Bản gốc luôn ở cạnh bản dịch — để bạn đọc liền mạch và đối chiếu khi cần.</p>
+      </div>
       <div class="drop" id="drop" tabindex="0" role="button" aria-label="Thả hoặc chọn tài liệu tiếng Trung">
-        <h1>Thả tài liệu tiếng Trung vào đây</h1>
-        <p class="drop-types">EPUB · PDF có lớp chữ · Word · TXT · Markdown · HTML</p>
-        <div class="drop-actions"><span class="btn primary">Chọn file</span><button id="try-sample" type="button" class="btn ghost">Thử đoạn mẫu</button></div>
+        <div class="drop-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M24 39V11m0 28c-6-4-12-5-19-4V9c7-1 13 0 19 4 6-4 12-5 19-4v26c-7-1-13 0-19 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 16c4-.5 8 0 11 2m-11 5c4-.5 8 0 11 2m8-7c3-2 7-2.5 11-2m-11 9c3-2 7-2.5 11-2" stroke="currentColor" stroke-opacity=".5" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+        <div class="drop-copy">
+          <h2>Chọn một tài liệu để bắt đầu</h2>
+          <p>Hoặc kéo thả tệp vào đây · EPUB, PDF có chữ, Word, TXT, Markdown, HTML</p>
+        </div>
+        <div class="drop-actions"><span class="btn primary">Chọn tệp <svg class="ic"><use href="#i-up"/></svg></span><button id="try-sample" type="button" class="btn ghost">Xem bản mẫu</button></div>
       </div>
       <ol class="how">
-        <li><b>Thả file</b>Đọc ngay trong trình duyệt, không tải lên đâu cả.</li>
-        <li><b>Dán key Gemini</b>Miễn phí ở Google AI Studio, hoặc dùng key GPT, DeepSeek, Qwen.</li>
-        <li><b>Bấm dịch</b>Đọc song song từng đoạn, tải EPUB hoặc Word.</li>
+        <li><b>Chọn tài liệu</b>Sách, truyện hoặc bài báo tiếng Trung.</li>
+        <li><b>Chọn cách dịch</b>Gemini, GPT hoặc model của riêng bạn.</li>
+        <li><b>Đọc &amp; lưu</b>Đối chiếu từng đoạn, xuất EPUB hay Word.</li>
       </ol>
+      <p class="welcome-footnote"><span aria-hidden="true">◆</span> Dịch trong trình duyệt. Không có máy chủ SinoBridge nhận tài liệu của bạn.</p>
     </div>
     <div class="pane" id="pane" hidden>
       <div class="pane-head"><span>Bản gốc</span><span></span><span class="pane-tr"><span id="target-label">Bản dịch</span><span class="done-count" id="done-count"></span></span></div>

@@ -14,10 +14,6 @@ SinoBridge là công cụ mã nguồn mở để dịch tài liệu trên máy t
 | **Dịch và kiểm tra** | Dịch sang tiếng Việt hoặc tiếng Anh bằng API key/model của người dùng hoặc Ollama trên máy. CLI có bộ nhớ thuật ngữ và bộ kiểm tra tự động gắn cờ một số lỗi về số liệu/trích dẫn; bản web chưa có các bước này. |
 | **Đọc và xuất file** | Tải EPUB, Word, Markdown, phụ đề hoặc trang HTML song ngữ. Chọn một đoạn để xem bản gốc, ghi chú kiểm tra và lịch sử sửa. |
 
-![Trang đọc song ngữ: bấm một câu tiếng Việt để xem câu tiếng Trung gốc, lỗi kiểm định, tên riêng và âm Hán Việt](docs/images/review-page.png)
-
-*Ví dụ trang đối chiếu: đoạn sai số liệu được gắn viền đỏ. Khi chọn một đoạn, phần bên phải hiển thị bản gốc, thuật ngữ và ghi chú kiểm tra. Rê chuột lên chữ 北 để xem âm Hán Việt.*
-
 ![Trang web SinoBridge: nền sáng, thư viện và công cụ dịch](docs/images/browser-home.png)
 
 ## Đọc và dịch sách dài trên web
@@ -29,6 +25,10 @@ SinoBridge là công cụ mã nguồn mở để dịch tài liệu trên máy t
 - Checkpoint không tự lên cloud. Cần dùng lại cùng trình duyệt và địa chỉ trang; xóa dữ liệu trang có thể làm mất tiến độ. Tải bản dịch định kỳ. EPUB/Word là bản đọc, không phải checkpoint có thể nhập lại để khôi phục.
 
 **Khác gì copy–paste vào Gemini/ChatGPT?** SinoBridge lo chia đoạn, xếp lượt, giữ thứ tự, ghép song ngữ, dịch tiếp và xuất file. Chất lượng vẫn phụ thuộc model; bản web chưa có bộ nhớ thuật ngữ, kiểm định số liệu/trích dẫn hay lịch sử duyệt như CLI. Mỗi người dùng key/account của chính mình, không dùng chung account của người làm trang. [Chi tiết bản web](web/README.md).
+
+![Trang đọc song ngữ hiện tại: chọn chế độ đọc, chuyển trang và xem checkpoint](docs/images/browser-reader-vi.png)
+
+*Giao diện web hiện tại, dùng đoạn mẫu hư cấu và bản dịch minh hoạ. Thanh trên có Trang chủ, chế độ đọc và phân trang; cột trái hiển thị tiến độ đã lưu.*
 
 ## Cách hoạt động
 
@@ -48,9 +48,7 @@ flowchart LR
 
 Mỗi đoạn dịch có mã và vị trí trong nguồn (dòng, trang hoặc mốc thời gian phụ đề) để người đọc tìm lại đúng đoạn tiếng Trung.
 
-## Cách dùng: kéo thả và dịch
-
-![Giao diện dịch tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh](docs/images/gui-vi.png)
+## Ứng dụng trên máy: kéo thả và dịch
 
 1. Cài Python 3.10+ nếu máy chưa có. Trên GitHub, chọn Code → Download ZIP rồi giải nén.
 2. Nhấp đúp file Start SinoBridge.command (macOS) hoặc Start SinoBridge.bat (Windows) trong thư mục scripts. Lần đầu ứng dụng cài thêm thư viện cần thiết.
@@ -123,8 +121,6 @@ server tương thích OpenAI (`--provider openai-compatible --base-url ...`). Xe
   biết âm luôn được gắn cờ để người kiểm tra.
 - Khi dịch, mô hình được gợi ý sẵn các tên đã biết và phải liệt kê tên riêng và thuật ngữ nó gặp. Tên gốc Trung Quốc
   được chuẩn hoá về Hán Việt; tên nước ngoài phiên âm bằng chữ Hán (特朗普) giữ dạng quen dùng (Trump).
-![Phiên âm Hán Việt tên riêng: tra từ điển trước, rồi ghép âm từng chữ; chữ đa âm được gắn cờ](docs/images/hanviet-cli.png)
-
 - **Bộ nhớ thuật ngữ** của từng dự án (`terms.json`) giữ cách dịch thống nhất từ chương 1 đến chương cuối. Kiểm định
   báo `TERM_INCONSISTENT` khi một đoạn dịch khác bộ nhớ.
 
@@ -152,16 +148,12 @@ Xuất bản:
     sinobridge export --workspace work/sach  --format docx --out out/sach.docx
     sinobridge export --workspace work/video --format srt  --out out/video.vi.srt
 
-<img src="docs/images/epub-bilingual.png" alt="EPUB song ngữ: câu tiếng Việt, bên dưới là câu tiếng Trung gốc" width="320" align="right">
-
-**EPUB song ngữ** (hình bên): mỗi đoạn tiếng Việt có đoạn tiếng Trung gốc ngay bên dưới, chia chương, có mục lục,
+**EPUB song ngữ**: mỗi đoạn tiếng Việt có đoạn tiếng Trung gốc ngay bên dưới, chia chương, có mục lục,
 đạt chuẩn EPUBCheck. Bỏ `--bilingual` để có bản chỉ tiếng Việt.
 
 Sản phẩm không có dấu "nháp" trên từng trang; trạng thái duyệt được ghi **một lần, trung thực** ở trang bản quyền
 (ví dụ "Bản dịch nháp: 120/300 đoạn đã được người duyệt"). Mỗi đoạn vẫn có mã neo ẩn trỏ về đoạn gốc.
 Với `--target en`, trang bản quyền, mục lục và trang đọc song ngữ dùng tiếng Anh.
-
-<br clear="right">
 
 ## Tra cứu nghiên cứu tiếng Trung
 
@@ -212,8 +204,7 @@ Dữ liệu ngôn ngữ kèm theo (`src/sinobridge/data/`) dựng từ Wiktionar
 CC-CEDICT (MDBG) và Unicode Unihan; phát hành theo **CC BY-SA 4.0** (file dựng từ Unihan theo Unicode License), xem
 [src/sinobridge/data/README.md](src/sinobridge/data/README.md).
 
-Ảnh minh hoạ dùng bài viết hư cấu trong `examples/demo_article_zh.md`, tạo lại bằng
-`python3 scripts/make_readme_images.py` (cần Playwright).
+Ảnh README được chụp từ giao diện web hiện tại, dùng đoạn mẫu hư cấu trong `web/src/parse.js` và bản dịch minh hoạ, không gọi model. Tạo lại bằng `python3 scripts/make_browser_readme_images.py` (cần npm dependencies trong `web/`, Playwright và Chromium).
 
 ## Kiểm thử
 

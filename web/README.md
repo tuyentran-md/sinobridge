@@ -2,6 +2,8 @@
 
 A static GitHub Pages application for Chinese-to-Vietnamese/English book and document translation. There is no hosted SinoBridge translation backend or shared service account. Each reader supplies their own file and model access.
 
+![Current SinoBridge browser homepage](../docs/images/browser-home.png)
+
 ## Read, translate, stop and resume
 
 1. Import an EPUB, text-based PDF, DOCX, TXT, Markdown or HTML file, or open the synthetic sample.

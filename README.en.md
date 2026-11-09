@@ -14,10 +14,6 @@ SinoBridge is an open-source tool for translating Chinese documents on your comp
 | **Translate and check** | Translate into English or Vietnamese with your own model/API key, or use Ollama locally. The CLI has term memory and numeric/citation checks; the browser version does not yet include those steps. |
 | **Read and export** | Download EPUB, Word, Markdown, subtitles or offline bilingual HTML. Select a passage to see its Chinese source, notes and revision history. |
 
-![Bilingual review page: click a translated sentence to see the Chinese source, QA flags, names and pinyin](docs/images/review-page-en.png)
-
-*In the offline bilingual review page, a red border flags a number mismatch. Select a passage to see its Chinese source, terms and review notes. Hover over 北 to see its pinyin.*
-
 ![SinoBridge browser home: light background, library and translation controls](docs/images/browser-home.png)
 
 ## Read and translate long books in the browser
@@ -29,6 +25,10 @@ SinoBridge is an open-source tool for translating Chinese documents on your comp
 - Checkpoints do not sync to the cloud. Use the same browser profile and site origin; clearing site data can lose progress. Download reading copies periodically. EPUB/DOCX exports are not restorable checkpoints.
 
 Compared with pasting into a chat, SinoBridge handles segmentation, queuing, ordering, source/translation pairing, resume and file assembly. Translation quality still depends on the chosen model. The browser does not include the CLI's terminology memory, numeric/citation QA or review history. Every visitor uses their own credentials/account. See the [browser documentation](web/README.md).
+
+![Current bilingual reader with reading modes, page navigation and saved checkpoints](docs/images/browser-reader-en.png)
+
+*Current web UI with an English translation target; interface labels are Vietnamese. Passages and translations are synthetic demonstration fixtures, not a model-quality benchmark.*
 
 ## How it works
 
@@ -48,9 +48,7 @@ flowchart LR
 
 Each translated passage retains a source ID and location (line, page or subtitle timestamp), so you can look up the corresponding Chinese passage.
 
-## Get started: drag and drop
-
-![SinoBridge desktop browser interface](docs/images/gui-en.png)
+## Local app: drag and drop
 
 1. Install Python 3.10+ if needed. On GitHub select Code → Download ZIP and unzip the repository.
 2. Double-click Start SinoBridge.command (macOS) or Start SinoBridge.bat (Windows) in the scripts folder. The first run installs the required libraries.
@@ -109,8 +107,6 @@ The model is your choice: `openai`, `gemini`, `deepseek`, `qwen`, `openrouter`, 
 
 ## Chinese names and terms
 
-![Chinese names in English: established forms from the dictionary, otherwise Hanyu Pinyin rules](docs/images/names-en-cli.png)
-
 - **English**: established forms come from about 17,000 CC-CEDICT proper nouns (Confucius, Tibet, Hong Kong, Yangtze River). Other names
   follow Hanyu Pinyin conventions:
   - people are written surname first, with the given name as one word (张明华 → Zhang Minghua);
@@ -155,15 +151,11 @@ A changed value (5% → 50%) is flagged HIGH.
     sinobridge export --workspace work/book  --format docx --out out/book.docx
     sinobridge export --workspace work/video --format srt  --out out/video.en.srt
 
-<img src="docs/images/epub-bilingual.png" alt="Bilingual EPUB: translated paragraph followed by the Chinese original" width="300" align="right">
-
-**Bilingual EPUB** (right; shown here with a Vietnamese target): each translated paragraph is followed by its Chinese original. It has
+**Bilingual EPUB**: each translated paragraph is followed by its Chinese original. It has
 chapters and a table of contents and passes EPUBCheck. Leave out `--bilingual` for a translation-only edition.
 
 Pages carry no "draft" banners. The review status is stated once, honestly, on the colophon page (for example "Draft translation:
 120/300 passages human-reviewed"). Every passage keeps an invisible anchor to its source passage.
-
-<br clear="right">
 
 ## Chinese research metadata
 
@@ -207,8 +199,7 @@ Bundled language data (`src/sinobridge/data/`) is built from Wiktionary (via kai
 the Unicode Unihan database. It is distributed under **CC BY-SA 4.0** (Unihan-derived files: Unicode License); see
 [src/sinobridge/data/README.md](src/sinobridge/data/README.md).
 
-The screenshots use the fictional article in `examples/demo_article_zh.md`. Regenerate them with `python3 scripts/make_readme_images.py`
-(requires Playwright).
+README screenshots capture the current web UI using the synthetic sample from `web/src/parse.js` and illustrative translations, without model calls. Regenerate them with `python3 scripts/make_browser_readme_images.py` (requires npm dependencies in `web/`, Playwright and Chromium).
 
 ## Tests
 

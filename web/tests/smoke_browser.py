@@ -32,7 +32,7 @@ try:
         page.on('pageerror',lambda exc:errors.append(str(exc)))
         page.goto(URL,wait_until='domcontentloaded')
         assert "SinoBridge" in page.title()
-        assert page.get_by_role('heading',name='Dịch tài liệu tiếng Trung ngay trên trình duyệt.').is_visible()
+        assert page.get_by_role('heading',name='Dịch tài liệu tiếng Trung',exact=True).is_visible()
         page.locator('#file').set_input_files(str(ROOT/'examples'/'synthetic_zh.md'))
         page.locator('#current').wait_for(state='visible')
         assert 'synthetic_zh.md' in page.locator('#current').inner_text()

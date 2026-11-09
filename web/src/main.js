@@ -4,7 +4,8 @@ import {listProjects,saveProject} from './database.js';
 import {exportProject} from './export.js';
 
 const el=id=>document.getElementById(id);
-const state={project:null,projects:[],working:false,stop:false,gpu:false,engine:null,model:null};
+const state={project:null,projects:[],working:false,stop:false,gpu:false,engine:null,model:null,libraryOpen:false};
+const LIB_SHORT=3;
 let webllmModule=null;
 const modelList=new Set([...el('model').options].map(o=>o.value));
 const $status=el('status');
@@ -22,35 +23,50 @@ function count(p){return p.segments.filter(s=>Boolean(s.translation)).length;}
 function view() {
   const p=state.project,working=state.working;
   el('current').hidden=!p;
+  el('sample-hint').hidden=Boolean(p);
+  el('drop').classList.toggle('compact',Boolean(p));
+  el('drop').querySelector('strong').textContent=p?'Thả file khác vào đây':'Thả tài liệu vào đây';
   if(p){
-    el('current').textContent=p.name+' · '+p.segments.length+' đoạn · '+(p.target==='en'?'Tiếng Anh':'Tiếng Việt');
+    el('current').textContent=p.name+' · '+p.segments.length+' đoạn';
     el('target').value=p.target;
   }
-  const complete=p && count(p)===p.segments.length;
+  const done=p?count(p):0;
+  const complete=p && done===p.segments.length;
   el('start').disabled=!p||!state.gpu||working||complete;
-  el('start').textContent=p&&count(p)?'Dịch tiếp phần còn lại':'Bắt đầu dịch';
+  el('start').textContent=working?'Đang dịch…':complete?'Đã dịch xong':done?'Dịch tiếp':'Bắt đầu dịch';
   el('stop').hidden=!working;
-  for(const b of document.querySelectorAll('[data-export]')) b.disabled=!p||!count(p);
-  if(p&&!working) pct(100*count(p)/p.segments.length);
+  if(!working) el('stop').disabled=false;
+  for(const b of document.querySelectorAll('[data-export]')) b.disabled=!p||!done;
+  if(p&&!working) pct(100*done/p.segments.length);
+  el('s1').dataset.state=p?'done':'active';
+  el('s2').dataset.state=!p?'':complete?'done':'active';
+  el('s3').dataset.state=complete?'active':done?'active':'';
+  el('done-count').hidden=!p;
+  if(p) el('done-count').textContent=done+'/'+p.segments.length+' đoạn';
   const box=el('preview');
   box.replaceChildren();
-  if(!p){const empty=document.createElement('p');empty.className='empty';empty.textContent='Sau khi thêm tài liệu, các đoạn đầu sẽ hiện ở đây.';box.append(empty);}
+  if(!p){const empty=document.createElement('p');empty.className='empty';empty.textContent='Thêm tài liệu để xem các đoạn đầu.';box.append(empty);}
   else {
     for(const s of p.segments.slice(0,8)) {
       const row=document.createElement('div');row.className='frag';
-      const vi=document.createElement('strong');vi.textContent=s.translation||'[chưa dịch]';
+      const vi=document.createElement('strong');vi.textContent=s.translation||'Chưa dịch';
+      if(!s.translation) vi.className='pending';
       const zh=document.createElement('div');zh.className='zh';zh.textContent=s.source.replace(/^#{1,6}\s+/, '');
       row.append(vi,zh);box.append(row);
     }
   }
   const lib=el('library');lib.replaceChildren();
-  if(!state.projects.length){const e=document.createElement('p');e.textContent='Chưa có tài liệu.';e.className='empty';lib.append(e);}
+  const all=state.projects.slice().sort((a,b)=>b.created-a.created).slice(0,25);
+  const more=el('library-more');
+  more.hidden=all.length<=LIB_SHORT;
+  more.textContent=state.libraryOpen?'Thu gọn':'Xem tất cả ('+all.length+')';
+  if(!all.length){const e=document.createElement('p');e.textContent='Chưa có tài liệu.';e.className='empty small';lib.append(e);}
   else {
-    for(const project of state.projects.slice().sort((a,b)=>b.created-a.created).slice(0,25)) {
+    for(const project of state.libraryOpen?all:all.slice(0,LIB_SHORT)) {
       const item=document.createElement('div');item.className='library-item'+(p&&p.id===project.id?' active':'');
       item.setAttribute('role','button');item.tabIndex=0;
       const name=document.createElement('strong');name.textContent=project.name;
-      const detail=document.createElement('small');detail.textContent=count(project)+'/'+project.segments.length+' đoạn đã dịch · '+(project.target==='en'?'EN':'VI');
+      const detail=document.createElement('small');detail.textContent=count(project)+'/'+project.segments.length+' · '+(project.target==='en'?'EN':'VI');
       item.append(name,detail);
       const action=()=>{if(state.working)return;state.project=project;view();status('Đã mở '+project.name);};
       item.addEventListener('click',action);
@@ -74,21 +90,21 @@ async function acceptFile(file){
     const project=await extractFile(file);
     project.target=el('target').value;
     await updateProject(project);
-    status('Đã thêm '+project.segments.length+' đoạn. Chọn model rồi bắt đầu dịch.','ok');
+    status('Đã thêm '+project.segments.length+' đoạn. Bấm Bắt đầu dịch khi sẵn sàng.','ok');
   } catch(e) {status('Không mở được file: '+e.message,'error');}
 }
 async function testGPU(){
   const supported=Boolean(navigator.gpu);
   if(!supported){
-    el('gpu-status').textContent='Trình duyệt này chưa hỗ trợ WebGPU. Hãy thử Chrome/Edge mới nhất trên máy có GPU phù hợp.';
+    el('gpu-status').textContent='Trình duyệt này chưa chạy được model (thiếu WebGPU). Hãy thử Chrome hoặc Edge mới nhất trên máy tính.';
     state.gpu=false;view();return;
   }
   try{
     const adapter=await navigator.gpu.requestAdapter();
     state.gpu=Boolean(adapter);
     el('gpu-status').textContent=adapter?
-      'WebGPU đã sẵn sàng. Có thể tải model và dịch trực tiếp trên máy.':
-      'Không tìm thấy GPU phù hợp. Hãy thử Chrome/Edge mới nhất trên máy tính.';
+      'Trình duyệt sẵn sàng chạy model trên máy.':
+      'Không tìm thấy GPU phù hợp. Hãy thử Chrome hoặc Edge mới nhất trên máy tính.';
   }catch(e) {
     state.gpu=false;
     el('gpu-status').textContent='Không bật được WebGPU: '+e.message;
@@ -104,12 +120,12 @@ async function initializeEngine(modelId){
   const entry=webllm.prebuiltAppConfig.model_list.find(m=>m.model_id===modelId);
   if(!entry) throw new Error('Model không có trong danh sách WebLLM hiện tại.');
   const vram=Math.round(entry?.vram_required_MB||0);
-  status('Đang tải model. Máy cần khoảng '+vram+' MB bộ nhớ GPU. Lần đầu có thể tải hàng GB dữ liệu…');
+  status('Đang tải model (cần khoảng '+vram+' MB bộ nhớ GPU). Lần đầu sẽ lâu hơn…');
   const engine=await webllm.CreateMLCEngine(modelId,{
     initProgressCallback: report=>{
       const label=typeof report?.text==='string'?report.text:'Đang tải model…';
       const fraction=Math.max(0,Math.min(1,report.progress||0));
-      status('Đang chuẩn bị model: '+label);
+      status('Đang tải model… '+label);
       pct(100*fraction);
     }
   });
@@ -140,7 +156,7 @@ async function translate(){
       if(state.stop)break;
       const s=p.segments[i];
       if(s.translation)continue;
-      status('Đang dịch đoạn '+(i+1)+'/'+p.segments.length+'…');
+      status('Đang dịch '+count(p)+'/'+p.segments.length+' đoạn');
       const context=p.segments.slice(Math.max(0,i-1),i).map(s=>s.source.slice(0,220)).join('\n');
       const user='Context (do not translate):\n'+context+'\n\nSource to translate:\n'+s.source;
       const response=await engine.chat.completions.create({
@@ -155,8 +171,8 @@ async function translate(){
       pct(100*count(p)/p.segments.length);
     }
     status(state.stop?
-      'Đã dừng. '+count(p)+'/'+p.segments.length+' đoạn đã lưu. Bạn có thể dịch tiếp.':
-      'Đã dịch '+count(p)+'/'+p.segments.length+' đoạn. Tải EPUB, Word hoặc file song ngữ ở bước 3.','ok');
+      'Đã dừng ở '+count(p)+'/'+p.segments.length+' đoạn. Bấm Dịch tiếp bất cứ lúc nào.':
+      'Xong '+count(p)+'/'+p.segments.length+' đoạn. Tải file ở mục Kết quả.','ok');
   } catch(e){
     status('Không dịch được: '+(e?.message||String(e))+'. Các đoạn đã xong vẫn được lưu.','error');
   } finally {
@@ -179,25 +195,26 @@ async function init(){
   el('try-sample').addEventListener('click',async()=>{
     if(state.working)return;
     await updateProject(syntheticSample(el('target').value));
-    status('Đã thêm đoạn mẫu. Chọn model rồi bấm Bắt đầu dịch.','ok');
+    status('Đã thêm đoạn mẫu. Bấm Bắt đầu dịch để thử.','ok');
   });
   el('target').addEventListener('change',async()=>{
     if(state.project && count(state.project)) {
       el('target').value=state.project.target;
-      status('Muốn đổi ngôn ngữ? Hãy nhập lại tài liệu để tạo bản dịch mới.','error');
+      status('Tài liệu này đã dịch một phần. Muốn đổi ngôn ngữ, hãy thêm lại file.','error');
     }else if(state.project){
       state.project.target=el('target').value;
       await updateProject(state.project);
     }
   });
   el('start').addEventListener('click',translate);
-  el('stop').addEventListener('click',()=>{state.stop=true;el('stop').disabled=true;status('Đang dừng sau đoạn đang dịch…');});
+  el('stop').addEventListener('click',()=>{state.stop=true;el('stop').disabled=true;status('Sẽ dừng sau đoạn đang dịch…');});
+  el('library-more').addEventListener('click',()=>{state.libraryOpen=!state.libraryOpen;view();});
   document.querySelectorAll('[data-export]').forEach(btn=>btn.addEventListener('click',async()=>{
     if(!state.project)return;
     try{
       btn.disabled=true;
       await exportProject(state.project,btn.dataset.export,el('bilingual').checked);
-      status('Đã tạo file '+btn.dataset.export.toUpperCase()+'.','ok');
+      status('Đã tải file '+btn.dataset.export.toUpperCase()+'.','ok');
     }catch(e){status('Không tạo được file: '+e.message,'error');}
     finally{view();}
   }));
@@ -208,6 +225,7 @@ async function init(){
     state.projects=await listProjects();
     state.project=state.projects.sort((a,b)=>b.created-a.created)[0]||null;
   }catch(e){status('Không đọc được thư viện của trình duyệt: '+e.message,'error');}
+  if(state.project){const p=state.project,d=count(p);status(d===p.segments.length?'Đã dịch xong '+d+'/'+d+' đoạn.':d?'Đã dịch '+d+'/'+p.segments.length+' đoạn. Bấm Dịch tiếp để làm nốt.':'Sẵn sàng dịch '+p.segments.length+' đoạn.',d?'ok':'');}
   view();
   await testGPU();
 }

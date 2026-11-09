@@ -37,7 +37,7 @@ jobs:
       - name: Build sample EPUBs from synthetic text
         run: |
           pip install -e .
-          hanviet ingest examples/synthetic_zh.md --workspace /tmp/ws --kind paper
+          sinobridge ingest examples/synthetic_zh.md --workspace /tmp/ws --kind paper
           python - <<'PY'
           import json, pathlib
           p = pathlib.Path("/tmp/ws/segments.jsonl")
@@ -46,8 +46,8 @@ jobs:
               s["translation"], s["status"] = "Bản dịch mẫu " + s["source"].lstrip("# ")[:20], "DRAFT"
           p.write_text("".join(json.dumps(s, ensure_ascii=False) + "\n" for s in segs))
           PY
-          hanviet export --workspace /tmp/ws --format epub --out /tmp/vi.epub
-          hanviet export --workspace /tmp/ws --format epub --bilingual --out /tmp/bi.epub
+          sinobridge export --workspace /tmp/ws --format epub --out /tmp/vi.epub
+          sinobridge export --workspace /tmp/ws --format epub --bilingual --out /tmp/bi.epub
       - name: EPUBCheck
         run: |
           curl -sSL -o epubcheck.zip https://github.com/w3c/epubcheck/releases/download/v5.1.0/epubcheck-5.1.0.zip

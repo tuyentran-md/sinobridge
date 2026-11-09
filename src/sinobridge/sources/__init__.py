@@ -7,7 +7,7 @@ Two connector kinds share one registry:
 
 Third-party packages can add connectors (e.g. an institution's licensed CNKI/Wanfang API,
 a Weibo export reader) without changing this repository, via the entry-point group
-``hanviet_bridge.sources``. See docs/connectors.md.
+``sinobridge.sources``. See docs/connectors.md.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
@@ -62,9 +62,9 @@ def _builtin() -> list[Connector]:
 def _plugins() -> list[Connector]:
     found = []
     try:
-        eps = entry_points(group="hanviet_bridge.sources")
+        eps = entry_points(group="sinobridge.sources")
     except TypeError:  # Python < 3.10 API
-        eps = entry_points().get("hanviet_bridge.sources", [])
+        eps = entry_points().get("sinobridge.sources", [])
     for ep in eps:
         try:
             obj = ep.load()
@@ -92,7 +92,7 @@ def open_document(ref: str, connector: str | None = None):
     else:
         c = next((c for c in reg.values() if c.kind == "document" and c.handles and c.handles(ref)), None)
         if c is None:
-            raise ValueError(f"No connector can open {ref!r}. Run 'hanviet sources' to list supported inputs.")
+            raise ValueError(f"No connector can open {ref!r}. Run 'sinobridge sources' to list supported inputs.")
     raw, blocks, warnings, provenance = c.open(ref)
     provenance = {**provenance, "connector": c.name}
     return raw, blocks, warnings, provenance

@@ -55,7 +55,7 @@ def colophon_lines(project: dict, segs: list[dict]) -> list[str]:
     if summary["models"]:
         lines.append("Mô hình dịch: " + ", ".join(summary["models"]))
     lines.append("Bản quyền nội dung thuộc tác giả gốc; bản dịch dùng cho mục đích được phép.")
-    lines.append(f"Tạo bằng HanViet Bridge, {datetime.now(timezone.utc):%Y-%m-%d}.")
+    lines.append(f"Tạo bằng SinoBridge, {datetime.now(timezone.utc):%Y-%m-%d}.")
     return lines
 
 def book_title(project: dict, segs: list[dict]) -> str:
@@ -102,7 +102,7 @@ def docx(workspace: Path, outfile: Path, bilingual=False, trace=False):
         from docx.shared import Pt, RGBColor
         from docx.oxml.ns import qn
     except ImportError:
-        raise RuntimeError("DOCX output requires: pip install 'hanviet-bridge[docx]'") from None
+        raise RuntimeError("DOCX output requires: pip install 'sinobridge[docx]'") from None
     doc = Document()
     normal = doc.styles["Normal"]
     normal.font.name = "Times New Roman"
@@ -181,7 +181,7 @@ def epub(workspace: Path, outfile: Path, bilingual=False, trace=False):
         toc.append(f'<li><a href="{name}">{escape(ch_title)}</a></li>')
     nav = _xhtml("Mục lục", f'<nav epub:type="toc" id="toc"><h1>Mục lục</h1><ol>{"".join(toc)}</ol></nav>')
     modified = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    book_id = uuid.uuid5(uuid.NAMESPACE_URL, "hanviet:" + project["source_sha256"])
+    book_id = uuid.uuid5(uuid.NAMESPACE_URL, "sinobridge:" + project["source_sha256"])
     manifest = "\n".join(f'<item id="{Path(n).stem}" href="{n}" media-type="application/xhtml+xml"/>' for n in files)
     spine = "\n".join(f'<itemref idref="{Path(n).stem}"/>' for n in files)
     opf = f"""<?xml version="1.0" encoding="utf-8"?>

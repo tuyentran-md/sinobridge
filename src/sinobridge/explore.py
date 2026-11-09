@@ -12,7 +12,7 @@ from urllib.request import Request, urlopen
 import ssl
 
 def get_json(url: str) -> dict:
-    req = Request(url, headers={"Accept": "application/json", "User-Agent": "HanVietBridge/0.2 (scholarly metadata)"})
+    req = Request(url, headers={"Accept": "application/json", "User-Agent": "SinoBridge/0.2 (scholarly metadata)"})
     ctx = ssl.create_default_context()
     try:
         import certifi

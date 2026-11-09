@@ -11,7 +11,7 @@ from urllib.robotparser import RobotFileParser
 import ssl
 from .html_text import html_blocks, decode_html
 
-USER_AGENT = "HanVietBridge/0.2 (open-source translation toolkit; single-page fetch)"
+USER_AGENT = "SinoBridge/0.2 (open-source translation toolkit; single-page fetch)"
 MAX_BYTES = 8 * 1024 * 1024
 
 def _context():

@@ -85,7 +85,7 @@ def extract_pdf(path: Path):
     try:
         import fitz  # type: ignore
     except ImportError:
-        raise RuntimeError("PDF support needs: pip install 'hanviet-bridge[pdf]'") from None
+        raise RuntimeError("PDF support needs: pip install 'sinobridge[pdf]'") from None
     blocks = []
     with fitz.open(path) as doc:
         for p, page in enumerate(doc, 1):

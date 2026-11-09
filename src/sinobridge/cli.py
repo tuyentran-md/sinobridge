@@ -14,12 +14,13 @@ from . import export as exporters
 from . import library as lib
 from .sources import registry
 from .sources.references import import_references
+from . import hanviet, terms as term_memory
 
 EXPORTS = {"md": exporters.markdown, "docx": exporters.docx, "epub": exporters.epub,
            "srt": exporters.subtitles, "vtt": exporters.subtitles}
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="hanviet", description="Source-traceable Chinese -> Vietnamese reading, translation and research")
+    p = argparse.ArgumentParser(prog="sinobridge", description="Source-traceable Chinese -> Vietnamese reading, translation and research")
     sub = p.add_subparsers(dest="command", required=True)
 
     sub.add_parser("sources", help="List source connectors (built-in and plugins)")
@@ -28,7 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("source", help="File path (txt/md/docx/epub/pdf/html/srt/vtt) or http(s) URL")
     i.add_argument("--workspace", required=True, type=Path)
     i.add_argument("--kind", default="book", choices=["book", "paper", "article", "subtitle"])
-    i.add_argument("--connector", help="Force a specific document connector (see 'hanviet sources')")
+    i.add_argument("--connector", help="Force a specific document connector (see 'sinobridge sources')")
 
     t = sub.add_parser("translate", help="Model translation (external services need --allow-external)")
     t.add_argument("--workspace", required=True, type=Path)
@@ -73,6 +74,28 @@ def build_parser() -> argparse.ArgumentParser:
     lx.add_argument("--query")
     for sp in (li, ll, lk, lx):
         sp.add_argument("--library", type=Path, default=Path("library"))
+
+    h = sub.add_parser("hanviet", help="Hán-Việt for Chinese names/terms (诸葛亮 -> Gia Cát Lượng)")
+    h.add_argument("text", nargs="+")
+    h.add_argument("--lower", action="store_true", help="Do not capitalize (terms rather than names)")
+
+    tm = sub.add_parser("terms", help="Project term memory: names/terms with one agreed rendering")
+    tms = tm.add_subparsers(dest="action", required=True)
+    tl = tms.add_parser("list")
+    tl.add_argument("--status", choices=["auto", "locked"])
+    tset = tms.add_parser("set", help="Lock a rendering (enforced in translation and audit)")
+    tset.add_argument("zh")
+    tset.add_argument("vi")
+    tset.add_argument("--type", default="term", choices=["person", "place", "org", "dynasty", "work", "era", "term"])
+    tset.add_argument("--note")
+    trm = tms.add_parser("remove")
+    trm.add_argument("zh")
+    tsc = tms.add_parser("scan", help="Find known Chinese names in the source and suggest Hán-Việt (no model)")
+    for sp in (tl, tset, trm, tsc):
+        sp.add_argument("--workspace", required=True, type=Path)
+
+    dt = sub.add_parser("data", help="Optional data: fetch the full CVDICT dictionary (CC BY-SA 4.0)")
+    dt.add_argument("action", choices=["fetch", "info"])
 
     s = sub.add_parser("status", help="Show project coverage and review state")
     s.add_argument("--workspace", required=True, type=Path)
@@ -134,6 +157,33 @@ def run(args) -> object:
             records = lib.find(args.library, args.query)
             save_text(args.out, lib.to_ris(records))
             return {"file": str(args.out.resolve()), "records": len(records)}
+    if c == "hanviet":
+        results = [hanviet.transliterate(t, capitalize=not args.lower) for t in args.text]
+        for r in results:
+            glosses = hanviet.dictionary_glosses(r["zh"]) if hanviet.dictionary() else []
+            if glosses:
+                r["meanings"] = glosses
+        return results[0] if len(results) == 1 else results
+    if c == "terms":
+        if args.action == "list":
+            return {zh: t for zh, t in term_memory.load(args.workspace).items()
+                    if not args.status or t.get("status") == args.status}
+        if args.action == "set":
+            return term_memory.set_term(args.workspace, args.zh, args.vi, args.type, args.note)
+        if args.action == "remove":
+            return term_memory.remove_term(args.workspace, args.zh)
+        if args.action == "scan":
+            found = {}
+            for seg in load_segments(args.workspace):
+                for zh, vi in term_memory.name_hints(seg["source"]).items():
+                    found.setdefault(zh, {"hanviet": vi, "first_segment": seg["id"], "count": 0})["count"] += 1
+            return dict(sorted(found.items(), key=lambda kv: -kv[1]["count"]))
+    if c == "data":
+        if args.action == "fetch":
+            return hanviet.fetch_dictionary()
+        return {"bundled": [str(hanviet.DATA), str(hanviet.WORDS)], "cvdict_cache": str(hanviet.cache_dir() / "CVDICT.u8"),
+                "cvdict_present": bool(hanviet.dictionary()),
+                "licenses": "Bundled data CC BY-SA 4.0 (Wiktionary, CVDICT) + Unicode Unihan; code MIT"}
     if c == "status":
         meta, segs = load_project(args.workspace), load_segments(args.workspace)
         count = lambda st: sum(s["status"] == st for s in segs)

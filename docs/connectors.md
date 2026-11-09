@@ -1,6 +1,6 @@
 # Writing a source connector
 
-Connectors bring Chinese material into HanViet Bridge. There are two kinds:
+Connectors bring Chinese material into SinoBridge. There are two kinds:
 
 | kind | input | returns |
 |---|---|---|
@@ -22,7 +22,7 @@ provider, provider_id`.
 
 ```python
 # my_package/connectors.py
-from hanviet_bridge.sources import Connector
+from sinobridge.sources import Connector
 
 def open_weibo_export(ref: str):
     ...  # parse a user's own Weibo data export
@@ -39,11 +39,11 @@ def connectors():
 
 ```toml
 # my_package/pyproject.toml
-[project.entry-points."hanviet_bridge.sources"]
+[project.entry-points."sinobridge.sources"]
 weibo = "my_package.connectors:connectors"
 ```
 
-After `pip install my_package`, `hanviet sources` lists it and `hanviet ingest x.weibo.json ...` uses it
+After `pip install my_package`, `sinobridge sources` lists it and `sinobridge ingest x.weibo.json ...` uses it
 (or force it with `--connector weibo-export`).
 
 ## Rules for connectors in this repository

@@ -17,7 +17,7 @@ CHINESE_TERMS = ("中华人民共和国", "中国", "中国大陆", "人民法�
 ZH_DIGITS = {"零": 0, "〇": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9}
 ZH_UNITS = {"十": 10, "百": 100, "千": 1000}
 ZH_BIG = {"万": 10_000, "亿": 100_000_000}
-ZH_NUMERAL = re.compile(r"[零〇一二两三四五六七八九十百千万亿]{2,}")
+ZH_NUMERAL = re.compile(r"[零〇一二两三四五六七八九十百千万亿]+")  # soft: may satisfy, never reported
 
 def capture(regex, txt):
     return Counter(m.group(0).rstrip(".,;。；") for m in regex.finditer(txt))
@@ -133,19 +133,36 @@ def check_segment(seg: dict, glossary: dict | None = None) -> list[dict]:
         issues.append(make_issue(seg, "TABLE_MANUAL_QA", "MEDIUM", "Verify cell ordering, denominators and table structure"))
     return issues
 
+def check_terms(seg: dict, memory: dict) -> list[dict]:
+    """Every remembered name/term in the source must keep its agreed rendering."""
+    from . import terms as term_memory
+    from .hanviet import contains
+    if not seg.get("translation"):
+        return []
+    issues = []
+    for zh, t in term_memory.in_text(memory, seg["source"]).items():
+        vi = t.get("vi")
+        if vi and not contains(seg["translation"], vi):
+            locked = t.get("status") == "locked"
+            issues.append(make_issue(seg, "TERM_INCONSISTENT", "HIGH" if locked else "MEDIUM",
+                                     f"{zh} -> expected '{vi}' ({t.get('type', 'term')}, {t.get('status')})"))
+    return issues
+
 def audit(workspace: Path, glossary_path: Path | None = None) -> dict:
+    from . import terms as term_memory
     proj = load_project(workspace)
     segs = load_segments(workspace)
     glossary = {}
     if glossary_path:
         import json
         glossary = json.loads(glossary_path.read_text(encoding="utf-8"))
-    issues = [issue for s in segs for issue in check_segment(s, glossary)]
+    memory = term_memory.load(workspace)
+    issues = [issue for s in segs for issue in check_segment(s, glossary) + check_terms(s, memory)]
     missing = sum(not s.get("translation") for s in segs)
     critical_high = sum(issue["severity"] in ("CRITICAL", "HIGH") for issue in issues)
     reviewed = sum(approval_is_current(s) for s in segs)
     gates = {f"G{i}": {"status": "PENDING_HUMAN_REVIEW"} for i in range(1,12)}
-    gates["G6"] = {"status": "CHECKED_PARTIAL", "basis": "Optional glossary exact-string check only"}
+    gates["G6"] = {"status": "CHECKED_PARTIAL", "basis": "Glossary and term-memory rendering checks (string level)"}
     gates["G7"] = {"status": "CHECKED_PARTIAL", "basis": "Numeric/DOI/citation string checks; not scientific fact verification"}
     gates["G8"] = {"status": "CHECKED_PARTIAL", "basis": "Jurisdiction keyword heuristic; manual review required"}
     gates["G9"] = {"status": "FAIL" if missing else "CHECKED_PARTIAL",

@@ -8,10 +8,10 @@ __pycache__/
 dist/
 build/
 *.egg-info/
-workspace/
-workspaces/
-outputs/
-data/
+/workspace/
+/workspaces/
+/outputs/
+/data/
 *.pdf
 *.epub
 *.docx

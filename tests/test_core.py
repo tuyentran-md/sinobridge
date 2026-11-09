@@ -5,14 +5,14 @@ import zipfile
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from hanviet_bridge.ingest import ingest
-from hanviet_bridge.store import load_segments, save_segments
-from hanviet_bridge.qa import audit, check_segment
-from hanviet_bridge.translate import translate, parse_model_json
-from hanviet_bridge.export import markdown, epub
-from hanviet_bridge.explore import search
-from hanviet_bridge.review import approve, revise, review_html, approval_is_current
-from hanviet_bridge.qa import unmatched_numbers
+from sinobridge.ingest import ingest
+from sinobridge.store import load_segments, save_segments
+from sinobridge.qa import audit, check_segment
+from sinobridge.translate import translate, parse_model_json
+from sinobridge.export import markdown, epub
+from sinobridge.explore import search
+from sinobridge.review import approve, revise, review_html, approval_is_current
+from sinobridge.qa import unmatched_numbers
 
 class CoreTests(unittest.TestCase):
     def setUp(self):
@@ -138,7 +138,7 @@ class SourceTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_wechat_style_container_and_gbk(self):
-        from hanviet_bridge.sources.html_text import html_blocks, decode_html
+        from sinobridge.sources.html_text import html_blocks, decode_html
         html = ('<html><head><meta charset="gbk"><title>标题</title></head><body><nav>菜单</nav>'
                 '<div id="js_content"><section><span>第一段</span></section><h2>小标题</h2>'
                 '<p>第二段<br>续行</p></div><div class="comments">评论</div></body></html>')
@@ -148,7 +148,7 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(blocks[1][1], "heading")
 
     def test_subtitle_roundtrip(self):
-        from hanviet_bridge.export import subtitles
+        from sinobridge.export import subtitles
         srt = self.root / "v.srt"
         srt.write_text("1\n00:00:01,000 --> 00:00:02,500\n你好\n\n2\n00:00:03,000 --> 00:00:04,000\n<i>再见</i>\n", encoding="utf-8")
         ws = self.root / "ws"
@@ -164,8 +164,8 @@ class SourceTests(unittest.TestCase):
         self.assertIn("00:00:01.000 --> 00:00:02.500", vtt)
 
     def test_citation_imports_and_library(self):
-        from hanviet_bridge.sources.references import import_references
-        from hanviet_bridge import library as lib
+        from sinobridge.sources.references import import_references
+        from sinobridge import library as lib
         ris = self.root / "cnki.ris"
         ris.write_text("TY  - JOUR\nTI  - 先天性巨结肠的诊治\nAU  - 张三\nAU  - 李四\nPY  - 2021\nJO  - 中华小儿外科杂志\n"
                        "DO  - 10.3760/cma.j.issn.0253-3006.2021.01.001\nKW  - 巨结肠；儿童\nER  - \n", encoding="utf-8")
@@ -187,7 +187,7 @@ class SourceTests(unittest.TestCase):
         self.assertIn("TI  - 先天性巨结肠的诊治", lib.to_ris([rec]))
 
     def test_providers_local_needs_no_external_flag(self):
-        from hanviet_bridge.translate import resolve_endpoint
+        from sinobridge.translate import resolve_endpoint
         self.assertTrue(resolve_endpoint("ollama", None)[2])
         self.assertFalse(resolve_endpoint("deepseek", None)[2])
         with self.assertRaises(ValueError):
@@ -199,13 +199,61 @@ class SourceTests(unittest.TestCase):
             translate(self.root / "w", "deepseek", "m", allow_external=False, dry_run=False)
 
     def test_registry_and_caj_message(self):
-        from hanviet_bridge.sources import registry, open_document
+        from sinobridge.sources import registry, open_document
         reg = registry()
         self.assertTrue({"file", "url", "openalex", "crossref"} <= set(reg))
         with self.assertRaises(ValueError):
             open_document("http-less-thing.xyz")
         caj = self.root / "x.caj"
         caj.write_bytes(b"x")
-        from hanviet_bridge.sources.files import extract_file
+        from sinobridge.sources.files import extract_file
         with self.assertRaisesRegex(ValueError, "PDF"):
             extract_file(caj)
+
+
+class HanVietTests(unittest.TestCase):
+    def test_known_names_and_places(self):
+        from sinobridge.hanviet import transliterate
+        cases = {"毛泽东": "Mao Trạch Đông", "诸葛亮": "Gia Cát Lượng", "周恩来": "Chu Ân Lai",
+                 "北京": "Bắc Kinh", "重庆": "Trùng Khánh", "司马迁": "Tư Mã Thiên", "四川省": "tỉnh Tứ Xuyên"}
+        for zh, vi in cases.items():
+            self.assertEqual(transliterate(zh)["hanviet"], vi, zh)
+
+    def test_character_level_and_flags(self):
+        from sinobridge.hanviet import transliterate, readings, tone_key
+        r = transliterate("张三丰", use_lexicon=False)
+        self.assertEqual(r["hanviet"], "Trương Tam Phong")
+        self.assertEqual(readings("行", "xing2")[0][0], "hành")
+        self.assertEqual(readings("重", "chong2")[0][0], "trùng")
+        self.assertIn("乐", transliterate("乐山")["ambiguous"])
+        self.assertEqual(tone_key("Hoà"), tone_key("hòa"))
+        self.assertEqual(tone_key("lý"), tone_key("lí"))
+
+    def test_term_memory_record_and_audit(self):
+        from sinobridge import terms
+        tmp = tempfile.TemporaryDirectory()
+        root = Path(tmp.name)
+        src = root / "a.md"
+        src.write_text("诸葛亮来到成都。\n\n诸葛亮笑了。", encoding="utf-8")
+        ws = root / "ws"
+        ingest(src, ws, "book")
+        segs = load_segments(ws)
+        notes = terms.record(ws, segs[0]["id"], [
+            {"zh": "诸葛亮", "vi": "Chư Cát Lượng", "type": "person", "origin": "chinese"},
+            {"zh": "特朗普", "vi": "Trump", "type": "person", "origin": "foreign"},
+            {"zh": "乐山", "vi": "Lạc Sơn", "type": "place", "origin": "chinese"}])
+        mem = terms.load(ws)
+        self.assertEqual(mem["诸葛亮"]["vi"], "Gia Cát Lượng")        # dictionary wins over the model
+        self.assertEqual(mem["特朗普"]["vi"], "Trump")                # foreign names are not Hán-Việt'd
+        self.assertEqual(mem["乐山"]["vi"], "Lạc Sơn")                # valid contextual reading kept
+        self.assertEqual(notes[0]["hanviet"], "Gia Cát Lượng")
+        segs[0]["translation"], segs[1]["translation"] = "Gia Cát Lượng đến Thành Đô.", "Khổng Minh cười."
+        save_segments(ws, segs)
+        self.assertEqual(terms.name_hints(segs[0]["source"]).get("诸葛亮"), "Gia Cát Lượng")
+        result = audit(ws)
+        codes = [(i["segment_id"], i["code"]) for i in result["issues"]]
+        self.assertIn((segs[1]["id"], "TERM_INCONSISTENT"), codes)
+        self.assertNotIn((segs[0]["id"], "TERM_INCONSISTENT"), codes)
+        terms.set_term(ws, "诸葛亮", "Khổng Minh", "person")
+        self.assertEqual(terms.load(ws)["诸葛亮"]["status"], "locked")
+        tmp.cleanup()

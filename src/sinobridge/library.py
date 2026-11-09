@@ -77,7 +77,7 @@ def to_ris(records: list[dict]) -> str:
             if r.get(key):
                 lines.append(f"{tag}  - {r[key]}")
         lines += [f"KW  - {k}" for k in r.get("keywords", [])]
-        lines.append(f"N1  - hanviet library id {r['id']}; found via " +
+        lines.append(f"N1  - sinobridge library id {r['id']}; found via " +
                      ", ".join(f.get('provider') or f.get('file') or '?' for f in r["found_via"]))
         out.append("\n".join(lines) + "\nER  - \n")
     return "\n".join(out)

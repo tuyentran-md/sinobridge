@@ -1,112 +1,112 @@
 # HanViet Bridge
 
-**Source-traceable Chinese → Vietnamese translation and Chinese-language scholarly discovery.**
+**Đọc, dịch và tra cứu tài liệu tiếng Trung sang tiếng Việt — mọi câu dịch đều truy được về đúng đoạn gốc.**
 
-A reusable, open-source-ready Python CLI. Initial scope: help translate permitted documents, audit transfer errors, generate clearly labeled **drafts**, and search public scholarly metadata. The app does **not** claim professional translation, factual verification, or publishing readiness.
+*Source-traceable Chinese → Vietnamese reading, translation and research toolkit. English summary below.*
 
-## Three workflows
+HanViet Bridge là công cụ mã nguồn mở (MIT) gồm ba phần dùng chung một nền:
 
-1. **Book** — import permitted Chinese TXT/Markdown/DOCX/EPUB/PDF, translate with paragraph context and glossary, produce bilingual Markdown and draft EPUB.
-2. **Academic paper** — preserve source-linked passage IDs; check numbers, DOI, citation tokens, and China-specific terms. Tables, equations, images and PDF reading order still need manual inspection.
-3. **Research explorer** — search bibliographic records via [OpenAlex](https://help.openalex.org/api/) or [Crossref](https://www.crossref.org/documentation/retrieve-metadata/rest-api/), save metadata plus provenance. CNKI/Wanfang/VIP/SinoMed full-text access is **not implemented** and must honor provider rights.
+| Phần | Làm gì |
+|---|---|
+| **Nguồn** (connectors) | Lấy tài liệu tiếng Trung từ file (TXT, Markdown, DOCX, EPUB, PDF), trang web công khai (bài WeChat, Zhihu, báo, blog, Wikipedia), trang lưu từ trình duyệt, phụ đề video (Bilibili/Douyin: .srt/.vtt), trích dẫn xuất từ CNKI/Wanfang/VIP/SinoMed. Có cơ chế plugin để cộng đồng viết thêm nguồn. |
+| **Dịch & kiểm định** | Dịch theo đoạn có ngữ cảnh và bảng thuật ngữ, bằng mô hình bạn chọn (DeepSeek, Qwen, OpenAI, Gemini, OpenRouter, hoặc **Ollama chạy trên máy** — không gửi dữ liệu ra ngoài). Tự động kiểm số liệu, DOI, trích dẫn, thuật ngữ, ngữ cảnh pháp lý Trung Quốc; sửa có lịch sử; duyệt gắn với đúng câu đã duyệt. |
+| **Xuất bản sạch** | EPUB3 chia chương có mục lục, DOCX, Markdown, phụ đề .srt/.vtt tiếng Việt, và trang đọc song ngữ offline: bấm một câu tiếng Việt → thấy câu tiếng Trung, lỗi, ghi chú, lịch sử sửa. |
 
-All generated projects live outside Git by default (workspace/ is ignored). The repo includes no private input documents or API keys.
+## Cài đặt
 
-## Quick start
+Python 3.10+.
 
-Python 3.10+. At the repository root:
+    git clone <repo-url> && cd hanviet-bridge
+    python3 -m venv .venv && . .venv/bin/activate
+    pip install -e '.[all]'      # gồm hỗ trợ PDF và DOCX
 
-    python3 -m venv .venv
-    .venv/bin/pip install -e .
-    hanviet ingest examples/synthetic_zh.md --workspace workspace/demo --kind paper
-    hanviet status --workspace workspace/demo
-    hanviet translate --workspace workspace/demo --provider gemini --model YOUR_AVAILABLE_MODEL --dry-run
-    hanviet audit --workspace workspace/demo
-    hanviet export --workspace workspace/demo --format md --out outputs/demo_draft.md --draft --bilingual
+## Dùng nhanh
 
-No model request occurs until --allow-external is supplied with a configured key. **Never send patient-identifiable or confidential manuscripts to unapproved remote models.**
+    hanviet sources                                    # xem các nguồn hỗ trợ
+    hanviet ingest sach.epub --workspace work/sach --kind book
+    hanviet ingest "https://zh.wikipedia.org/wiki/汉越词" --workspace work/wiki --kind article
+    hanviet ingest video.zh.srt --workspace work/video --kind subtitle
 
-Translate **one segment** through an approved provider:
+Dịch (mặc định 1 đoạn để thử; `--max-segments 0` = tất cả):
 
-    export GEMINI_API_KEY="..."
-    hanviet translate --workspace workspace/demo --provider gemini --model YOUR_AVAILABLE_MODEL --max-segments 1 --allow-external
+    # Mô hình chạy trên máy, không cần khoá API, dữ liệu không rời máy
+    hanviet translate --workspace work/sach --provider ollama --model qwen2.5:14b --max-segments 5
 
-Alternatively use --provider openai with OPENAI_API_KEY and an accessible model.
-Browser subscriptions and model entitlements do not automatically provide API access.
-A --max-segments value of 0 means all pending segments, potentially with significant API costs.
+    # Dịch vụ từ xa: phải bật --allow-external sau khi kiểm tra quyền/bảo mật tài liệu
+    export DEEPSEEK_API_KEY=...
+    hanviet translate --workspace work/sach --provider deepseek --model deepseek-chat --allow-external --dry-run
+    hanviet translate --workspace work/sach --provider deepseek --model deepseek-chat --allow-external --max-segments 0
 
-Draft exports and mechanical QA:
+Nhà cung cấp: `ollama`, `deepseek`, `qwen`, `openai`, `gemini`, `openrouter`, `openai-compatible --base-url ...`
+(xem `.env.example`). Tên model là của nhà cung cấp; công cụ không mặc định model nào.
 
-    hanviet audit --workspace workspace/demo --glossary examples/glossary.sample.json
-    hanviet export --workspace workspace/demo --format epub --out outputs/book_draft.epub --draft
-    hanviet export --workspace workspace/demo --format docx --out outputs/paper_draft.docx --draft
+Kiểm định, đọc, sửa, duyệt:
 
-DOCX export requires python-docx; PDF extraction requires PyMuPDF (pip install -e '.[pdf]').
-PDF scans are not OCR'd. EPUB export is a basic reading draft, not EPUBCheck-certified or visually validated.
+    hanviet audit  --workspace work/sach --glossary examples/glossary.sample.json
+    hanviet export --workspace work/sach --format html --out out/doc-song-ngu.html
+    hanviet revise --workspace work/sach --segment <ID> --text "Câu sửa" --reviewer "Lan" \
+                   --reason "Sai số liệu 58 -> 85" --severity HIGH
+    hanviet approve --workspace work/sach --segment <ID> --reviewer "Lan" --evidence "Đối chiếu bản gốc"
 
-Bilingual review page and traceable corrections:
+Xuất bản:
 
-    hanviet export --workspace workspace/demo --format html --out outputs/review.html
-    hanviet revise --workspace workspace/demo --segment SEGMENT_ID --text "Bản sửa" \
-        --reviewer "Name" --reason "Wrong number 58 -> 85" --severity HIGH --issue-code NUMERIC_MISMATCH
-    hanviet approve --workspace workspace/demo --segment SEGMENT_ID --reviewer "Name" --evidence "Read against source"
+    hanviet export --workspace work/sach  --format epub --out out/sach.epub
+    hanviet export --workspace work/sach  --format epub --bilingual --out out/sach-song-ngu.epub
+    hanviet export --workspace work/sach  --format docx --out out/sach.docx
+    hanviet export --workspace work/video --format srt  --out out/video.vi.srt
 
-The HTML page is a single offline file (no server, no network). Click any Vietnamese passage to see the exact
-Chinese source passage, its location, audit flags, ambiguities/notes, approval and revision history.
-Revisions are append-only (previous text, reviewer, reason, severity). An approval is bound to a hash of the
-approved text; if the translation changes afterwards, audit raises STALE_APPROVAL and the approval no longer counts.
+Sản phẩm không có dấu "nháp" trên từng trang; trạng thái duyệt được ghi **một lần, trung thực** ở trang bản quyền
+(ví dụ "Bản dịch nháp: 120/300 đoạn đã được người duyệt"). Mỗi đoạn vẫn có mã neo ẩn trỏ về đoạn gốc.
 
-Numeric QA compares values, not strings: 1.25 = 1,25 (Vietnamese decimal comma), 1,200 = 1.200, full-width digits
-and simple Chinese numerals (一百二十 = 120) are matched. A changed value (5% -> 50%) is flagged HIGH.
+## Tra cứu nghiên cứu tiếng Trung
 
-Find Chinese-language research metadata:
+    hanviet search "先天性巨结肠" --source openalex --limit 10 --library mylib
+    hanviet library import cnki_export.ris --library mylib      # RIS / EndNote / NoteExpress
+    hanviet library list --library mylib --query 巨结肠
+    hanviet library link --library mylib --record <ID> --workspace work/paper1
+    hanviet library export --library mylib --out refs.ris        # mở bằng Zotero/EndNote
 
-    hanviet search "小儿肛门直肠畸形" --source openalex --language zh --limit 5 --out outputs/chinese_papers.json
-    hanviet search "肛门直肠畸形" --source crossref --language zh --limit 5
+- OpenAlex trả về cả tóm tắt và link truy cập mở (OA) nếu có.
+- **CNKI/Wanfang/VIP/SinoMed**: công cụ không đăng nhập hay cào dữ liệu. Ai có quyền truy cập thì tự xuất trích dẫn
+  (RIS/EndNote/NoteExpress) và tải PDF, rồi `library import` + `ingest` file PDF. File `.caj` cần đổi sang PDF trước.
+- Mạng xã hội cần đăng nhập (Weibo, Zhihu, Xiaohongshu, WeChat bị robots.txt chặn): mở bằng trình duyệt của bạn,
+  *Lưu trang (HTML)*, rồi `ingest` file đã lưu.
 
-Crossref results are filtered client-side and can be sparse. Both services can miss local Chinese-language studies.
+## Nguyên tắc
 
-## Output and provenance
+- **Truy vết**: mỗi đoạn có mã, vị trí trong file gốc (dòng, trang, khối, mốc thời gian phụ đề), SHA-256 nguồn;
+  trang web được lưu bản chụp (`source_snapshot.html`) vì nội dung web thay đổi.
+- **Không giả vờ chắc chắn**: kiểm định tự động chỉ là bằng chứng một phần; không cổng ngữ nghĩa/khoa học nào
+  tự động "PASS". Xem [chính sách QA](docs/qa-policy.md).
+- **Quyền và riêng tư**: chỉ gửi văn bản ra API khi bạn bật `--allow-external`; không vượt paywall, không cào hàng loạt,
+  tôn trọng robots.txt. Bản dịch không xoá bản quyền của tác giả gốc.
+- Không dùng bản dịch tài liệu y khoa để kết luận lâm sàng khi chưa đọc nguồn gốc.
 
-- project.json — source checksum, type, warnings, source/target language and review/rights status.
-- segments.jsonl — source, source location, stable segment ID, draft translation, model and explicit human approval.
-- qa.json — issue ledger, severity, eleven gate states, and release-readiness blocked pending review.
-- outputs/ — explicitly requested artifacts only, ignored by Git.
+## Viết thêm nguồn (plugin)
 
-If source content changes, use a **new workspace** to preserve the old translation and audit. Model results are saved after each successful segment.
+Một package Python bất kỳ có thể thêm connector qua entry point `hanviet_bridge.sources` — ví dụ API CNKI có
+bản quyền của một trường, trình đọc file xuất Weibo, RSS. Xem [docs/connectors.md](docs/connectors.md).
 
-## Eleven editorial gates
+## Lộ trình
 
-G1 Chinese semantics; G2 Vietnamese fluency; G3 sentence completeness; G4 paragraph coherence; G5 style; G6 terminology; G7 science and numeric fidelity; G8 Chinese vs Vietnamese jurisdiction; G9 structural completeness; G10 full-chapter reading; G11 independent adversarial review.
+Xem [ROADMAP.md](ROADMAP.md). Đóng góp: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Critical caveat:** automated checks can only provide partial evidence for G6–G9. No automatic PASS is issued for semantic or scientific accuracy. Even a zero-issue audit does not authorize public release. Read [QA policy](docs/qa-policy.md).
+## English summary
 
-## Security, provenance and rights
+HanViet Bridge ingests Chinese material (files, public web pages, saved pages, subtitles, CNKI/Wanfang citation
+exports, plugin connectors), translates it to Vietnamese segment-by-segment with your chosen model (local Ollama or
+remote APIs behind an explicit `--allow-external`), runs deterministic QA (numbers by value across locales, DOI,
+citations, glossary, jurisdiction), keeps an append-only revision history and hash-bound approvals, and exports clean
+EPUB3/DOCX/Markdown/SRT plus an offline bilingual review page. Every output passage links back to its exact source
+passage.
 
-- No source books or paywalled papers distributed, only synthetic example text.
-- Check ownership and translation/redistribution rights before exporting or sharing translated content. Translation does not extinguish source copyright.
-- Research module fetches metadata, not bulk full text, copyrighted figures, or paywalled provider documents.
-- Every paragraph retains source location and ID, but flattened figures/tables still need human comparison.
-- Paid API calls require explicit opt-in. No credentials are logged or committed.
-- Never use translated medical findings for clinical conclusions without independent primary-source reading.
-- No automatic Git commits, pushes, deployments, releases or background tasks.
+## Ghi công
 
-## Inspiration and attribution
+Cảm hứng quy trình (trung thành, tự nhiên, kiểm định nhiều cổng, truy vết) từ
+[prompt dịch How To Live Better](https://thuongtin.notion.site/Prompt-d-ch-How-To-Live-Better-t-ti-ng-Trung-sang-ti-ng-Vi-t-41172ac96186819dae67c730db8d7152)
+và [thuongtin/HowToLiveBetter](https://github.com/thuongtin/HowToLiveBetter) (CC BY 4.0). Mã nguồn được viết độc lập,
+giấy phép MIT.
 
-Workflow inspiration: the public [How To Live Better Chinese-to-Vietnamese translation prompt](https://thuongtin.notion.site/Prompt-d-ch-How-To-Live-Better-t-ti-ng-Trung-sang-ti-ng-Vi-t-41172ac96186819dae67c730db8d7152), and [thuongtin/HowToLiveBetter](https://github.com/thuongtin/HowToLiveBetter) (upstream repo displayed CC BY 4.0 in November 2026). We adapted the general notions of fidelity, fluency, staged QA and provenance; **we do not copy the book or upstream source**. The toolkit's code is independently implemented and MIT licensed.
-
-## Planned features (not implemented)
-
-- Robust scientific PDF layout, table/formula OCR, cell/page provenance, JATS and RIS.
-- Chapter-wide glossary consistency, in-browser editing (review page is read-only; corrections via `revise`), manual adjudication.
-- Independent model reviewer and human-locked release gates.
-- Publication EPUB3 (TOC, cover, layout, EPUBCheck, visual and device QA).
-- Rights-respecting licensed catalog adapters for CNKI/Wanfang/VIP/SinoMed.
-- Local model integration and source-cited RAG; complete research provenance and citation checks.
-
-## Verification
+## Kiểm thử
 
     python3 -m unittest discover -s tests -v
-    python3 -m compileall -q src
-
-**Status:** v0.1 local prototype (+ review page, revision history); not yet pushed or published.

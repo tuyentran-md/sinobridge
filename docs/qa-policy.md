@@ -18,6 +18,6 @@ The project favors source-linked evidence over model confidence.
 - PDF reading order, columns, scanned pages and glyph extraction may be incorrect.
 - Numeric regex may flag valid locale formatting or miss wrong semantic attachment.
 - Metadata coverage varies; an indexed record is not verified primary evidence.
-- This version does not generate a signed editor-approved publishing package.
+- Exports state review coverage in the colophon; they are not a signed editor-approved publishing package.
 
 No mass paid translation without permission, paywall bypass, patient data disclosure, silent overwrites or unreviewed publication.

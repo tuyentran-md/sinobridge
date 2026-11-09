@@ -259,10 +259,10 @@ body{background:var(--lac-0)}
 .field-row a{color:var(--cinnabar);font-size:.73rem}
 .field-row a:hover{color:var(--cinnabar-hi)}
 select,input[type=password],input[type=text],input:not([type]){
-  min-height:42px;border-radius:6px;border:1px solid #d6dccf;background:#fdfcf8;
+  min-height:42px;border-radius:6px;border:1px solid #d6dccf;background-color:#fdfcf8;
   box-shadow:0 1px 0 #fff inset;padding:10px 12px;color:var(--egg);font-size:.83rem
 }
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%2379867b' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E")}
+select{padding-right:34px;background-repeat:no-repeat;background-position:right 12px center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%2379867b' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E")}
 select:focus,input:focus{border-color:var(--cinnabar);box-shadow:0 0 0 3px #a43e3414}
 input{caret-color:var(--cinnabar)}
 .check{font-size:.77rem;color:var(--egg-2)}
@@ -301,7 +301,7 @@ input{caret-color:var(--cinnabar)}
 }
 .welcome::before{
   content:"";position:absolute;z-index:-2;inset:0;
-  background:url("../ink-landscape.svg") center right/cover no-repeat;
+  background:url("../ink-landscape.svg") right bottom/cover no-repeat;
   opacity:.94;pointer-events:none;
 }
 .welcome::after{
@@ -451,7 +451,7 @@ input{caret-color:var(--cinnabar)}
 :root[data-theme=dark] select,
 :root[data-theme=dark] input[type=password],
 :root[data-theme=dark] input[type=text],
-:root[data-theme=dark] input:not([type]){background:#303b32;color:#eee9d8;border-color:#526453;box-shadow:none}
+:root[data-theme=dark] input:not([type]){background-color:#303b32;color:#eee9d8;border-color:#526453;box-shadow:none}
 :root[data-theme=dark] select:hover,
 :root[data-theme=dark] input:hover{border-color:#809782}
 :root[data-theme=dark] select option{background:#303b32;color:#eee9d8}

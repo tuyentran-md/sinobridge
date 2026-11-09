@@ -4,6 +4,8 @@
 
 [Tiếng Việt](README.md) · **English**
 
+**[Try the browser demo](https://tuyentran-md.github.io/sinobridge/)** · Local WebGPU translation without an API key (compatible hardware required). See [browser demo limitations](web/README.md).
+
 SinoBridge is an open-source tool for translating Chinese documents on your computer. Add a file, choose a language and your own AI model, then download the translation. The command-line interface also supports research workflows.
 
 | Part | What it does |

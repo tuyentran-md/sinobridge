@@ -18,3 +18,7 @@ build/
 *.zip
 *.sqlite
 .DS_Store
+
+# Static demo site
+/web/node_modules/
+/web/dist/

@@ -1,0 +1,21 @@
+{
+  "name": "sinobridge-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@mlc-ai/web-llm": "0.2.87",
+    "docx": "^9.5.1",
+    "jszip": "3.10.1",
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "6.5.438"
+  },
+  "devDependencies": {
+    "vite": "8.3.6"
+  }
+}

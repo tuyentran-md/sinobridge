@@ -4,6 +4,8 @@
 
 **Tiếng Việt** · [English](README.en.md)
 
+**[Dùng thử trên web](https://tuyentran-md.github.io/sinobridge/)** · Dịch bằng model chạy trong trình duyệt (cần WebGPU, không cần API key). Xem [giới hạn của bản web](web/README.md).
+
 SinoBridge là công cụ mã nguồn mở để dịch tài liệu trên máy tính. Bạn chọn file, ngôn ngữ và model AI đang sử dụng. Ứng dụng chia tài liệu thành các đoạn, hỗ trợ kiểm tra bản dịch và xuất file đọc. Dòng lệnh có thêm các chức năng dành cho nghiên cứu.
 
 | Phần | Làm gì |

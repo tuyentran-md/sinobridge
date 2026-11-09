@@ -495,7 +495,6 @@ input{caret-color:var(--cinnabar)}
 .faq{max-width:1040px;margin:0 auto;padding:88px 32px 72px;display:grid;grid-template-columns:minmax(200px,270px) minmax(0,1fr);gap:24px 72px;align-items:start;scroll-margin-top:24px}
 .faq-head{position:sticky;top:28px}
 .faq-head h2{margin:0 0 12px;font:400 clamp(1.7rem,2.6vw,2.1rem)/1.2 Georgia,serif;color:var(--egg)}
-.faq-head p{margin:0;font-size:.9rem;line-height:1.7;color:var(--egg-3)}
 .faq-list{border-top:1px solid var(--rule)}
 .faq details{border-bottom:1px solid var(--rule)}
 .faq summary{list-style:none;cursor:pointer;padding:18px 40px 18px 0;position:relative;font-size:.98rem;font-weight:500;line-height:1.5;color:var(--egg);transition:color .15s}

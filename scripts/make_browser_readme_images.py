@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Capture the current web UI with synthetic sample translations; no model calls.
 
-Requires npm ci in web/ and Playwright with Chromium. Legacy CLI/export screenshots
-are generated separately by make_readme_images.py.
+Requires npm ci in web/ and Playwright with Chromium.
 """
 from pathlib import Path
 import os

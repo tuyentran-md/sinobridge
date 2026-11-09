@@ -37,7 +37,8 @@
       <h2 id="h-model"><span>02</span> Công cụ dịch</h2>
       <label class="field"><span>Dịch bằng</span>
         <select id="provider">
-          <option value="account">Tài khoản ChatGPT / Google · không cần key</option>
+          <option value="agy">Tài khoản Google · qua app trên máy</option>
+          <option value="codex">Tài khoản ChatGPT · qua app trên máy</option>
           <option value="gemini" selected>Google Gemini · API key, có gói miễn phí</option>
           <option value="openai">OpenAI (GPT)</option>
           <option value="openrouter">OpenRouter · nhiều model</option>
@@ -53,8 +54,12 @@
         <label class="check"><input id="remember" type="checkbox"><span>Nhớ key trên máy này</span></label>
       </div>
       <div id="account-block" class="account" hidden>
-        <p>Trang web không dùng được tài khoản ChatGPT Plus hay Google AI Pro, vì các gói này không mở API cho trang khác. Bản <b>ứng dụng chạy trên máy</b> thì dùng được: nó gọi Codex CLI (tài khoản ChatGPT) hoặc Antigravity CLI (tài khoản Google) bạn đã đăng nhập sẵn.</p>
-        <a class="btn solid" href="https://github.com/tuyentran-md/sinobridge#d%C3%B9ng-t%C3%A0i-kho%E1%BA%A3n-chatgpt-ho%E1%BA%B7c-google" target="_blank" rel="noopener">Xem cách cài bản trên máy<svg class="ic"><use href="#i-out"/></svg></a>
+        <p>Dùng tài khoản đã đăng nhập trên máy bạn, không cần API key. Cần mở app SinoBridge trên máy trước.</p>
+        <div class="bridge-row">
+          <label class="field"><span>Cổng app</span><input id="bridge-port" inputmode="numeric" autocomplete="off" value="8765"></label>
+          <button id="bridge-check" class="btn solid small" type="button">Kiểm tra lại</button>
+        </div>
+        <a class="field-link" href="https://github.com/tuyentran-md/sinobridge#d%C3%B9ng-t%C3%A0i-kho%E1%BA%A3n-chatgpt-ho%E1%BA%B7c-google" target="_blank" rel="noopener">Cách cài app trên máy<svg class="ic"><use href="#i-out"/></svg></a>
       </div>
       <div id="model-block">
       <label class="field"><span>Tên model</span>
@@ -124,7 +129,7 @@
   <h2 id="h-faq">Hỏi đáp</h2>
   <details><summary>Tài liệu và key của tôi đi đâu?</summary><p>File được đọc ngay trong trình duyệt. Khi dịch, từng đoạn văn được gửi thẳng tới nhà cung cấp model bạn chọn (ví dụ Google), kèm key của bạn; không có máy chủ SinoBridge nào ở giữa. Key chỉ được lưu trên máy nếu bạn tích "Nhớ key". Bản dịch lưu trong bộ nhớ trình duyệt, đóng tab vẫn mở lại dịch tiếp được.</p></details>
   <details><summary>Lấy key Gemini miễn phí thế nào?</summary><p>Vào Google AI Studio (aistudio.google.com/apikey), đăng nhập tài khoản Google, bấm "Create API key" rồi dán vào ô API key. Gói miễn phí có giới hạn số lần gọi mỗi phút và mỗi ngày; khi chạm giới hạn, SinoBridge tự chờ rồi dịch tiếp. Ở gói miễn phí, Google có thể dùng dữ liệu gửi lên để cải thiện dịch vụ, nên đừng dịch tài liệu nhạy cảm bằng gói này.</p></details>
-  <details><summary>Tôi có tài khoản ChatGPT Plus hoặc Google AI Pro, dùng được không?</summary><p>Được, nhưng qua bản ứng dụng chạy trên máy, không phải trang web này. Bản trên máy gọi công cụ dòng lệnh chính thức của hãng mà bạn đã đăng nhập: Codex CLI cho tài khoản ChatGPT, Antigravity CLI cho tài khoản Google. Trang web chỉ dùng được API key (Gemini có gói miễn phí, chỉ tính tiền khi bạn tự bật thanh toán) hoặc model chạy trên máy.</p></details>
+  <details><summary>Tôi có tài khoản ChatGPT Plus hoặc Google AI Pro, dùng được không?</summary><p>Được. Cài và đăng nhập công cụ dòng lệnh chính thức của hãng một lần (Antigravity CLI <code>agy</code> cho tài khoản Google, Codex CLI cho tài khoản ChatGPT), rồi mở app SinoBridge trên máy. Trên trang này, chọn "Tài khoản Google" hoặc "Tài khoản ChatGPT": trang gửi từng đoạn tới app trên máy bạn (127.0.0.1), app gọi công cụ đã đăng nhập. Không cần API key; lượt dùng tính vào gói của bạn. Chrome hoặc Edge có thể hỏi quyền truy cập thiết bị trong mạng cục bộ, hãy bấm Cho phép.</p></details>
   <details><summary>"Chạy trên máy" là gì?</summary><p>Trình duyệt tải một model nhỏ (Qwen 2.5, vài trăm MB đến vài GB) và dịch bằng GPU của máy bạn, không cần key. Cần Chrome hoặc Edge mới trên máy tính có WebGPU. Model nhỏ dịch kém hơn nhiều so với Gemini hay GPT.</p></details>
   <details><summary>Bản dịch có chính xác không?</summary><p>Đây là bản nháp máy dịch. Tên riêng, thuật ngữ chuyên ngành và bảng biểu có thể sai, hãy đối chiếu với bản gốc ngay bên cạnh. PDF scan (ảnh chụp) chưa nhận dạng chữ.</p></details>
   <details><summary>Bản quyền</summary><p>Chỉ dịch và chia sẻ tài liệu bạn có quyền sử dụng. Trang này không lưu hay phân phối sách. SinoBridge là mã nguồn mở MIT.</p></details>

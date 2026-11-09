@@ -57,11 +57,12 @@ Không có API key nhưng đã có tài khoản? Bản chạy trên máy dùng �
 | Tài khoản ChatGPT (Plus, Pro, Team…) | [Codex CLI](https://developers.openai.com/codex/cli) | chạy lệnh codex login |
 | Tài khoản Google (miễn phí hoặc Google AI Pro) | [Antigravity CLI](https://antigravity.google) (lệnh agy) | chạy agy rồi đăng nhập Google |
 
-Sau đó chọn "Tài khoản ChatGPT" hoặc "Tài khoản Google / Gemini" ở mục chọn model, để trống ô Model nếu muốn dùng model mặc định. Dòng lệnh: sinobridge translate --provider chatgpt --allow-external (hoặc --provider google).
+Sau đó chọn "Tài khoản ChatGPT" hoặc "Tài khoản Google / Gemini" ở mục chọn model, chọn model trong danh sách (ví dụ gemini-3.8-flash-medium) hoặc để trống để dùng model mặc định. Dòng lệnh: sinobridge translate --provider chatgpt --allow-external (hoặc --provider google).
 
 - Nội dung vẫn được gửi tới OpenAI hoặc Google, nên ứng dụng vẫn hỏi xác nhận trước khi dịch. Lượt dùng tính vào hạn mức của gói tài khoản.
 - SinoBridge chạy công cụ trong một thư mục tạm trống, chế độ chỉ đọc, và yêu cầu trả về đúng một đối tượng JSON chứa bản dịch.
-- Bản web trên GitHub Pages không làm được việc này: trình duyệt không chạy được công cụ trên máy, và các gói ChatGPT/Google AI Pro không mở API cho trang khác. Trên web, hãy dùng API key (Gemini có gói miễn phí, chỉ tính tiền khi bạn tự bật thanh toán).
+- **Dùng ngay trên trang web:** mở app trên máy (scripts/Start SinoBridge.command hoặc sinobridge serve), rồi trên [trang web](https://tuyentran-md.github.io/sinobridge/) chọn "Tài khoản Google (Antigravity)" hoặc "Tài khoản ChatGPT". Trang gửi từng đoạn tới app trên máy bạn (127.0.0.1:8765), app gọi công cụ đã đăng nhập. App chỉ nhận yêu cầu từ trang SinoBridge chính thức (kiểm tra Origin và Host), không nhận từ trang khác. Chrome hoặc Edge có thể hỏi quyền truy cập thiết bị trong mạng cục bộ: bấm Cho phép. Safari có thể chặn kết nối này; khi đó dùng Chrome, hoặc dùng thẳng giao diện của app trên máy.
+- Danh sách model của tài khoản Google lấy từ lệnh agy models (ví dụ gemini-3.8-flash-medium).
 
 ## Cài đặt (dòng lệnh)
 

@@ -9,8 +9,11 @@ import os
 import pathlib
 import re
 import signal
+import stat
 import subprocess
+import sys
 import tempfile
+import threading
 import time
 import urllib.request
 import zipfile
@@ -23,6 +26,19 @@ URL = f"http://127.0.0.1:{PORT}/"
 GEMINI = "https://generativelanguage.googleapis.com/"
 server = subprocess.Popen(["npm", "run", "dev", "--", "--port", str(PORT), "--strictPort"],
                           cwd=WEB, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+FAKE_AGY = r'''#!/usr/bin/env python3
+import re, sys
+args = sys.argv[1:]
+if args == ["models"]:
+    print("gemini-3.8-flash-medium\tGemini 3.8 Flash (Medium)\ngemini-3.8-flash-low\tGemini 3.8 Flash (Low)")
+    sys.exit(0)
+assert args[args.index("--model") + 1] == "gemini-3.8-flash-medium", args
+prompt = args[args.index("-p") + 1]
+numbers = re.findall(r"⟦(\d+)⟧", prompt.split("Passages:", 1)[1])
+print("\n".join(f"⟦{n}⟧ Bản dịch qua agy {n}" for n in numbers))
+'''
 
 
 class FakeGemini:
@@ -155,9 +171,42 @@ try:
         p2.locator("#start").click()
         p2.wait_for_function("document.querySelector('#status').classList.contains('error')", timeout=15000)
         assert "Key không đúng" in p2.locator("#status").inner_text()
-        ctx2.close(); ctx.close(); browser.close()
+        ctx2.close()
+
+        # Account via the local app: the page talks to a real SinoBridge server on 127.0.0.1,
+        # which runs a fake `agy` (no model call, no quota).
+        bin_dir = pathlib.Path(d) / "bin"
+        bin_dir.mkdir()
+        (bin_dir / "agy").write_text(FAKE_AGY, encoding="utf-8")
+        (bin_dir / "agy").chmod(0o755)
+        os.environ["PATH"] = f"{bin_dir}{os.pathsep}{os.environ['PATH']}"
+        os.environ["SINOBRIDGE_WEB_ORIGINS"] = URL.rstrip("/")
+        sys.path.insert(0, str(ROOT / "src"))
+        from sinobridge import webapp
+        app_port = 18879
+        app_server = webapp.create_server(pathlib.Path(d) / "appdata", app_port)
+        threading.Thread(target=app_server.serve_forever, daemon=True).start()
+        try:
+            ctx3 = browser.new_context()
+            p3 = ctx3.new_page()
+            p3.goto(URL, wait_until="domcontentloaded")
+            p3.evaluate(f"localStorage.setItem('sb-bridge-port','{app_port}')")
+            p3.reload(wait_until="domcontentloaded")
+            p3.locator("#try-sample").click()
+            p3.locator("#current").wait_for(state="visible")
+            p3.select_option("#provider", "agy")
+            assert p3.locator("#key-block").is_hidden() and p3.locator("#account-block").is_visible()
+            p3.wait_for_function("document.querySelector('#model-note').textContent.includes('Đã kết nối')", timeout=15000)
+            assert p3.locator("#model").input_value() == "gemini-3.8-flash-medium"
+            p3.locator("#start").click()
+            p3.wait_for_function("document.querySelector('#status').textContent.startsWith('Xong')", timeout=30000)
+            assert "Bản dịch qua agy 1" in p3.locator("#preview").inner_text()
+            ctx3.close()
+        finally:
+            app_server.shutdown(); app_server.server_close()
+        ctx.close(); browser.close()
     print("BROWSER_SMOKE_PASS: import, key + model list, batched translation with 429 retry, "
-          "persistence, 4 exports, opt-in key storage, wrong-key message, no real model calls")
+          "persistence, 4 exports, opt-in key storage, wrong-key message, account via local app bridge, no real model calls")
 finally:
     try:
         os.killpg(server.pid, signal.SIGTERM)

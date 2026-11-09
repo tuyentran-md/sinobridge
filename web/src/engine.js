@@ -2,9 +2,20 @@
 // Cloud providers: the user's own key, sent straight from this browser to the provider they chose
 // (all speak the OpenAI chat-completions protocol and allow browser requests). Nothing passes
 // through a SinoBridge server. Local: an open-weight model on WebGPU via WebLLM, no key.
+// Account (bridge): the SinoBridge app running on the user's own computer (127.0.0.1) runs the
+// signed-in Antigravity (agy) or Codex CLI for this page. Nothing leaves the computer except the
+// CLI's own call to Google or OpenAI.
 
 export const PROVIDERS = {
-  account: { label: 'Tài khoản ChatGPT / Google', account: true, models: [] },
+  agy: {
+    label: 'Tài khoản Google (Antigravity)', bridge: 'google', tool: 'agy', owner: 'Google',
+    models: ['gemini-3.8-flash-medium', 'gemini-3.8-flash-low', 'gemini-3.8-flash-high', 'gemini-4-argon-medium'],
+    prefer: /^gemini-3\.8-flash-medium$/, concurrency: 2,
+  },
+  codex: {
+    label: 'Tài khoản ChatGPT (Codex)', bridge: 'chatgpt', tool: 'codex', owner: 'OpenAI',
+    models: ['default'], concurrency: 2,
+  },
   gemini: {
     label: 'Google Gemini', base: 'https://generativelanguage.googleapis.com/v1beta/openai',
     models: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'],
@@ -98,6 +109,21 @@ export function parseNumbered(text, count) {
 }
 
 export class KeyError extends Error {}
+export const bridge = { port: 8765 };
+const baseOf = p => p.bridge ? `http://127.0.0.1:${bridge.port}/bridge/${p.bridge}/v1` : p.base;
+const authOf = (p, key) => p.bridge ? {} : { 'Authorization': 'Bearer ' + key };
+
+// Is the SinoBridge app open on this computer? Returns its info, or null.
+export async function bridgeInfo() {
+  try {
+    const response = await fetch(`http://127.0.0.1:${bridge.port}/bridge/v1/info`, { signal: AbortSignal.timeout(3000) });
+    if (!response.ok) return { refused: response.status };
+    return await response.json();
+  } catch { return null; }
+}
+function errorText(detail) {
+  try { const data = JSON.parse(detail); return String(data.error?.message || data.error || detail); } catch { return detail; }
+}
 const sleep = (ms, signal) => new Promise((resolve, reject) => {
   const timer = setTimeout(resolve, ms);
   signal?.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')); }, { once: true });
@@ -109,13 +135,15 @@ async function chat(provider, key, model, messages, signal) {
   for (let attempt = 0; ; attempt++) {
     let response;
     try {
-      response = await fetch(p.base + '/chat/completions', {
+      response = await fetch(baseOf(p) + '/chat/completions', {
         method: 'POST', signal,
-        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', ...(p.headers || {}) },
+        headers: { ...authOf(p, key), 'Content-Type': 'application/json', ...(p.headers || {}) },
         body: JSON.stringify({ model, messages, temperature: 0.2, ...(extra || {}) }),
       });
     } catch (error) {
-      if (error.name === 'AbortError' || attempt >= 4) throw error.name === 'AbortError' ? error : new Error('Không kết nối được tới ' + p.label + '.');
+      if (error.name === 'AbortError') throw error;
+      if (p.bridge && attempt >= 1) throw new Error('Không kết nối được app SinoBridge trên máy. Mở app rồi bấm Dịch tiếp.');
+      if (attempt >= 4) throw new Error('Không kết nối được tới ' + p.label + '.');
       await sleep(1500 * 2 ** attempt, signal);
       continue;
     }
@@ -123,7 +151,8 @@ async function chat(provider, key, model, messages, signal) {
       const data = await response.json();
       return data.choices?.[0]?.message?.content || '';
     }
-    const detail = (await response.text().catch(() => '')).slice(0, 300);
+    const detail = errorText((await response.text().catch(() => '')).slice(0, 400));
+    if (p.bridge) throw new Error(response.status === 403 ? 'App trên máy từ chối trang này. Hãy cập nhật app SinoBridge.' : p.label + ': ' + detail);
     if (response.status === 401 || response.status === 403) throw new KeyError('Key không đúng hoặc không có quyền dùng model này (' + p.label + ', mã ' + response.status + ').');
     if (response.status === 400 && extra) { p.extraRejected = true; extra = null; continue; }
     if (response.status === 404) throw new Error('Không tìm thấy model "' + model + '". Hãy chọn model khác trong danh sách.');
@@ -140,7 +169,7 @@ async function chat(provider, key, model, messages, signal) {
 export async function listModels(provider, key, signal) {
   const p = PROVIDERS[provider];
   if (p.local) return p.models.slice();
-  const response = await fetch(p.base + '/models', { headers: { 'Authorization': 'Bearer ' + key }, signal });
+  const response = await fetch(baseOf(p) + '/models', { headers: authOf(p, key), signal });
   if (response.status === 401 || response.status === 403) throw new KeyError('Key không đúng.');
   if (!response.ok) throw new Error('HTTP ' + response.status);
   const data = await response.json();

@@ -6,12 +6,12 @@ import './style.css';
 import {extractFile,syntheticSample} from './parse.js';
 import {listProjects,saveProject} from './database.js';
 import {exportProject} from './export.js';
-import {PROVIDERS,KeyError,translateProject,listModels,preferredModel} from './engine.js';
+import {PROVIDERS,KeyError,translateProject,listModels,preferredModel,bridge,bridgeInfo} from './engine.js';
 
 const el=id=>document.getElementById(id);
 const PAGE=200;
 const LIB_SHORT=4;
-const state={project:null,projects:[],working:false,controller:null,gpu:null,libraryOpen:false,shown:PAGE,busy:new Set(),polish:new Set()};
+const state={project:null,projects:[],working:false,controller:null,gpu:null,bridge:null,libraryOpen:false,shown:PAGE,busy:new Set(),polish:new Set()};
 const prefs={get:k=>{try{return localStorage.getItem('sb-'+k);}catch{return null;}},set:(k,v)=>{try{v==null?localStorage.removeItem('sb-'+k):localStorage.setItem('sb-'+k,v);}catch{}}};
 const memoryKeys={};
 
@@ -21,6 +21,8 @@ const target=()=>document.querySelector('input[name=target]:checked').value;
 function setTarget(v){const r=document.querySelector('input[name=target][value="'+v+'"]');if(r)r.checked=true;}
 const provider=()=>el('provider').value;
 const apiKey=()=>el('api-key').value.trim();
+const needsKey=()=>{const p=PROVIDERS[provider()];return !p.local&&!p.bridge;};
+const bridgeReady=p=>Boolean(state.bridge&&state.bridge.accounts&&state.bridge.accounts[p.bridge]);
 
 /* ---------- rendering ---------- */
 function renderInlay(p){
@@ -86,12 +88,12 @@ function renderLibrary(){
 function controls(){
   const p=state.project,working=state.working,done=p?count(p):0,complete=p&&done===p.segments.length;
   const prov=PROVIDERS[provider()];
-  const ready=prov.account?false:prov.local?state.gpu===true:Boolean(apiKey());
+  const ready=prov.bridge?bridgeReady(prov):prov.local?state.gpu===true:Boolean(apiKey());
   el('start').disabled=!p||working||complete||!ready||!el('model').value.trim();
   el('start').textContent=working?'Đang dịch…':complete?'Đã dịch xong':done?'Dịch tiếp':'Bắt đầu dịch';
   el('stop').hidden=!working;
   for(const b of document.querySelectorAll('[data-export]'))b.disabled=!p||!done;
-  for(const c of [el('provider'),el('api-key'),el('model'),...document.querySelectorAll('input[name=target]')])c.disabled=working;
+  for(const c of [el('provider'),el('api-key'),el('model'),el('bridge-port'),el('bridge-check'),...document.querySelectorAll('input[name=target]')])c.disabled=working;
   el('pick').disabled=working;
 }
 function view(){
@@ -113,7 +115,7 @@ async function refreshModels(){
   const name=provider(),p=PROVIDERS[name],list=el('model-list');
   const fill=ids=>{list.replaceChildren(...ids.map(id=>{const o=document.createElement('option');o.value=id;return o;}));};
   fill(p.models);
-  if(p.local||p.account||!apiKey())return;
+  if(p.local||(p.bridge?!bridgeReady(p):!apiKey()))return;
   try{
     const ids=await listModels(name,apiKey());
     if(provider()!==name||!ids.length)return;
@@ -131,16 +133,23 @@ function note(message,warn=false){
     box.textContent=state.gpu===true?'Model tải về máy ở lần đầu (vài trăm MB đến vài GB). Dịch chậm và kém hơn model cloud.':
       state.gpu===false?'Trình duyệt này không chạy được model trên máy (thiếu WebGPU). Hãy dùng Chrome hoặc Edge mới, hoặc chọn Gemini.':'Đang kiểm tra trình duyệt…';
     box.className='note'+(state.gpu===false?' warn':'');
+  }else if(p.bridge){
+    const b=state.bridge;
+    const warn=!b||b.refused||!bridgeReady(p);
+    box.className='note'+(warn?' warn':' ok');
+    box.textContent=b===null?'Chưa thấy app SinoBridge trên máy này. Mở app (Start SinoBridge.command) rồi bấm Kiểm tra lại.':
+      b==='checking'?'Đang tìm app SinoBridge trên máy…':
+      b.refused?'App trên máy từ chối trang này. Hãy cập nhật app SinoBridge.':
+      !bridgeReady(p)?'App đã mở nhưng máy chưa cài '+p.tool+'. Cài và đăng nhập '+p.tool+' một lần, rồi bấm Kiểm tra lại.':
+      'Đã kết nối app trên máy. Dịch bằng tài khoản '+p.owner+' của bạn qua '+p.tool+', không cần key.'+(p.bridge==='chatgpt'?' Để "default" nếu muốn dùng model mặc định của tài khoản.':'');
   }else box.textContent='Key chỉ gửi thẳng tới '+p.owner+', không qua máy chủ nào khác.';
 }
 function applyProvider(){
   const name=provider(),p=PROVIDERS[name];
   prefs.set('provider',name);
-  el('key-block').hidden=Boolean(p.local||p.account);
-  el('account-block').hidden=!p.account;
-  el('model-block').hidden=Boolean(p.account);
-  if(p.account){controls();return;}
-  if(!p.local){
+  el('key-block').hidden=Boolean(p.local||p.bridge);
+  el('account-block').hidden=!p.bridge;
+  if(!p.local&&!p.bridge){
     el('key-link').href=p.keyUrl;
     el('key-link').firstChild.textContent=p.keyLabel;
     el('api-key').value=storedKey(name);
@@ -149,6 +158,13 @@ function applyProvider(){
   el('model').value=prefs.get('model-'+name)||p.models[0];
   note();controls();refreshModels();
   if(p.local&&state.gpu===null)testGPU();
+  if(p.bridge)checkBridge();
+}
+async function checkBridge(){
+  state.bridge='checking';note();controls();
+  const info=await bridgeInfo();
+  state.bridge=info&&(info.refused||info.app==='sinobridge')?info:null;
+  note();controls();refreshModels();
 }
 async function testGPU(){
   try{state.gpu=Boolean(navigator.gpu&&await navigator.gpu.requestAdapter());}catch{state.gpu=false;}
@@ -170,7 +186,7 @@ async function acceptFile(file){
     project.target=target();
     state.shown=PAGE;
     await updateProject(project);view();
-    status('Đã thêm '+project.segments.length+' đoạn. '+(el('start').disabled&&!PROVIDERS[provider()].local&&!apiKey()?'Dán API key rồi bấm Bắt đầu dịch.':'Bấm Bắt đầu dịch khi sẵn sàng.'),'ok');
+    status('Đã thêm '+project.segments.length+' đoạn. '+(el('start').disabled&&needsKey()&&!apiKey()?'Dán API key rồi bấm Bắt đầu dịch.':'Bấm Bắt đầu dịch khi sẵn sàng.'),'ok');
   }catch(e){status('Không mở được file: '+e.message,'error');}
 }
 async function translate(){
@@ -232,7 +248,7 @@ async function init(){
     if(state.working)return;
     state.shown=PAGE;
     await updateProject(syntheticSample(target()));view();
-    status('Đã thêm đoạn mẫu. '+(PROVIDERS[provider()].local||apiKey()?'Bấm Bắt đầu dịch để thử.':'Dán API key rồi bấm Bắt đầu dịch.'),'ok');
+    status('Đã thêm đoạn mẫu. '+(!needsKey()||apiKey()?'Bấm Bắt đầu dịch để thử.':'Dán API key rồi bấm Bắt đầu dịch.'),'ok');
   });
   for(const radio of document.querySelectorAll('input[name=target]'))radio.addEventListener('change',async()=>{
     const p=state.project;
@@ -240,6 +256,11 @@ async function init(){
     if(p){p.target=target();await updateProject(p);view();}
   });
   el('provider').addEventListener('change',applyProvider);
+  const port=Number(prefs.get('bridge-port'));
+  if(port>=1024&&port<=65535)bridge.port=port;
+  el('bridge-port').value=bridge.port;
+  el('bridge-port').addEventListener('change',()=>{const v=Number(el('bridge-port').value);if(v>=1024&&v<=65535){bridge.port=v;prefs.set('bridge-port',String(v));}else el('bridge-port').value=bridge.port;checkBridge();});
+  el('bridge-check').addEventListener('click',checkBridge);
   let typing;
   el('api-key').addEventListener('input',()=>{
     const name=provider();memoryKeys[name]=apiKey();

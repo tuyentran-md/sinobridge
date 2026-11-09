@@ -129,29 +129,33 @@ def account_status(provider: str) -> dict:
     info = ACCOUNT_CLI[provider]
     return {"provider": provider, "installed": shutil.which(info["command"]) is not None, **info}
 
-def call_account(provider: str, model: str, system: str, user_payload: str, timeout: int = 600) -> dict:
+def run_account(provider: str, model: str, prompt: str, schema: dict | None = None, timeout: int = 600) -> str:
+    """Run the account CLI headless in an empty throwaway folder and return its final answer text."""
     info = ACCOUNT_CLI[provider]
     exe = shutil.which(info["command"])
     if not exe:
         raise RuntimeError(f"{info['label']}: {info['command']} is not installed. Install it ({info['install']}), "
                            f"sign in once with `{info['login']}`, then try again.")
-    prompt = (system + "\n\nReturn only the JSON object described above, nothing else. Do not run commands or "
-              "edit files; this is a translation task.\n\nINPUT:\n" + user_payload)
     chosen = model if model and model != "default" else None
     with tempfile.TemporaryDirectory(prefix="sinobridge-") as tmp:   # empty, throwaway working directory
-        schema = Path(tmp, "schema.json")
-        schema.write_text(json.dumps(TRANSLATION_SCHEMA), encoding="utf-8")
+        schema_file = Path(tmp, "schema.json")
+        if schema:
+            schema_file.write_text(json.dumps(schema), encoding="utf-8")
         if provider == "chatgpt":
             out = Path(tmp, "answer.txt")
             cmd = [exe, "exec", "--skip-git-repo-check", "--ephemeral", "--sandbox", "read-only",
-                   "-c", "project_doc_max_bytes=0", "--output-schema", str(schema), "-o", str(out), "-C", tmp]
+                   "-c", "project_doc_max_bytes=0", "-o", str(out), "-C", tmp]
+            if schema:
+                cmd += ["--output-schema", str(schema_file)]
             if chosen:
                 cmd += ["-m", chosen]
             run = subprocess.run(cmd + ["-"], input=prompt, capture_output=True, text=True, timeout=timeout, cwd=tmp)
             answer = out.read_text(encoding="utf-8") if out.exists() else run.stdout
         else:
             cmd = [exe, "-p", prompt, "--output-format", "text", "--sandbox", "--disable-slash-commands",
-                   "--json-schema", str(schema), "--print-timeout", f"{timeout}s"]
+                   "--print-timeout", f"{timeout}s"]
+            if schema:
+                cmd += ["--json-schema", str(schema_file)]
             if chosen:
                 cmd += ["--model", chosen]
             run = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 30, cwd=tmp)
@@ -161,7 +165,23 @@ def call_account(provider: str, model: str, system: str, user_payload: str, time
         detail = lines[-1][:300] if lines else ""
         raise RuntimeError(f"{info['label']} failed (exit {run.returncode}): {detail}. "
                            f"If you are not signed in, run `{info['login']}` once in a terminal.")
-    return parse_model_json(answer)
+    return answer
+
+def call_account(provider: str, model: str, system: str, user_payload: str, timeout: int = 600) -> dict:
+    prompt = (system + "\n\nReturn only the JSON object described above, nothing else. Do not run commands or "
+              "edit files; this is a translation task.\n\nINPUT:\n" + user_payload)
+    return parse_model_json(run_account(provider, model, prompt, TRANSLATION_SCHEMA, timeout))
+
+def account_models(provider: str) -> list[str]:
+    """Models the signed-in account can use. ChatGPT: the account default only."""
+    if provider != "google" or not shutil.which("agy"):
+        return ["default"]
+    try:
+        run = subprocess.run(["agy", "models"], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return ["default"]
+    ids = [line.split("\t")[0].strip() for line in run.stdout.splitlines() if "\t" in line]
+    return [i for i in ids if re.fullmatch(r"[A-Za-z0-9._-]+", i)] or ["default"]
 
 def resolve_endpoint(provider: str, base_url: str | None) -> tuple[str, str | None, bool]:
     """Return (base URL, key env var, is_local). Local endpoints never leave this machine."""

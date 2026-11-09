@@ -16,13 +16,16 @@ from pathlib import Path
 import re
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from threading import Lock, Thread
+from threading import BoundedSemaphore, Lock, Thread
+import os
+import subprocess
+import time
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 import webbrowser
 
 from .ingest import ingest
 from .store import load_project, load_segments
-from .translate import translate, PROVIDERS, ACCOUNT_CLI, account_status
+from .translate import translate, PROVIDERS, ACCOUNT_CLI, account_status, account_models, run_account
 from .qa import audit
 from .review import review_html
 from . import export as outputs
@@ -180,8 +183,25 @@ def clean(seg: dict, text: str) -> str:
     return re.sub(r"^\s{0,3}#{1,6}\s+", "", text) if seg.get("kind") == "heading" else text
 
 
+# Web pages allowed to use this app as a bridge to the signed-in account CLIs (agy, codex).
+# Only these origins get CORS access; any other site is refused by the browser and by the check below.
+WEB_ORIGINS = {"https://tuyentran-md.github.io"}
+BRIDGE_MAX = 1024 * 1024
+MODEL_CACHE: dict[str, tuple[float, list[str]]] = {}
+
+def cached_models(provider: str) -> list[str]:
+    hit = MODEL_CACHE.get(provider)
+    if hit and time.time() - hit[0] < 600:
+        return hit[1]
+    ids = account_models(provider)
+    MODEL_CACHE[provider] = (time.time(), ids)
+    return ids
+
 def make_handler(app: LocalApp, port: int):
     origins = {f"http://127.0.0.1:{port}", f"http://localhost:{port}"}
+    extra = {o.strip().rstrip("/") for o in os.getenv("SINOBRIDGE_WEB_ORIGINS", "").split(",") if o.strip()}
+    bridge_origins = WEB_ORIGINS | extra | origins
+    bridge_slots = BoundedSemaphore(2)   # at most two CLI runs at once
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "SinoBridgeLocal/0.1"
@@ -227,7 +247,89 @@ def make_handler(app: LocalApp, port: int):
                 raise ValueError("Invalid upload or request size (maximum 64 MB)")
             return self.rfile.read(size)
 
+        # ---------- bridge for the browser edition ----------
+        def _bridge_send(self, record: object, origin: str | None, status: int = 200):
+            body = json.dumps(record, ensure_ascii=False).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            if origin:
+                self.send_header("Access-Control-Allow-Origin", origin)
+                self.send_header("Vary", "Origin")
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _bridge_origin(self):
+            origin = (self.headers.get("Origin") or "").rstrip("/")
+            return origin if self._valid_host() and origin in bridge_origins else None
+
+        def do_OPTIONS(self):
+            origin = self._bridge_origin()
+            if not origin or not self.path.startswith("/bridge/"):
+                self._bridge_send({"error": {"message": "Origin not allowed"}}, None, 403)
+                return
+            self.send_response(204)
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+            self.send_header("Access-Control-Allow-Private-Network", "true")
+            self.send_header("Access-Control-Max-Age", "600")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+
+        def _bridge(self, method: str):
+            origin = self._bridge_origin()
+            if not origin:
+                self._bridge_send({"error": {"message": "Origin not allowed"}}, None, 403)
+                return
+            parts = urlsplit(self.path).path.strip("/").split("/")
+            try:
+                if method == "GET" and parts == ["bridge", "v1", "info"]:
+                    self._bridge_send({"app": "sinobridge", "bridge": 1,
+                                       "accounts": {n: account_status(n)["installed"] for n in ACCOUNT_CLI}}, origin)
+                    return
+                if len(parts) < 4 or parts[0] != "bridge" or parts[1] not in ACCOUNT_CLI or parts[2] != "v1":
+                    self._bridge_send({"error": {"message": "Unknown endpoint"}}, origin, 404)
+                    return
+                provider, rest = parts[1], parts[3:]
+                if method == "GET" and rest == ["models"]:
+                    self._bridge_send({"object": "list", "data": [{"id": i} for i in cached_models(provider)]}, origin)
+                    return
+                if method == "POST" and rest == ["chat", "completions"]:
+                    size = int(self.headers.get("Content-Length", "0"))
+                    if size < 1 or size > BRIDGE_MAX:
+                        raise ValueError("Request too large")
+                    body = json.loads(self.rfile.read(size))
+                    messages = body.get("messages") if isinstance(body, dict) else None
+                    if not isinstance(messages, list) or not all(
+                            isinstance(m, dict) and isinstance(m.get("content"), str) for m in messages):
+                        raise ValueError("Expected chat messages")
+                    model = str(body.get("model") or "default")
+                    if not re.fullmatch(r"[A-Za-z0-9._:/-]{1,80}", model):
+                        raise ValueError("Invalid model name")
+                    system = "\n\n".join(m["content"] for m in messages if m.get("role") == "system")
+                    user = "\n\n".join(m["content"] for m in messages if m.get("role") != "system")
+                    prompt = (system + "\n\nThis is a translation task only: do not run commands, read or edit files. "
+                              "Reply with the numbered translations and nothing else.\n\n" + user)
+                    with bridge_slots:
+                        text = run_account(provider, model, prompt, timeout=300)
+                    self._bridge_send({"object": "chat.completion", "model": model, "choices": [
+                        {"index": 0, "message": {"role": "assistant", "content": text.strip()}, "finish_reason": "stop"}]},
+                        origin)
+                    return
+                self._bridge_send({"error": {"message": "Unknown endpoint"}}, origin, 404)
+            except subprocess.TimeoutExpired:
+                self._bridge_send({"error": {"message": "The account tool took too long to answer"}}, origin, 400)
+            except (ValueError, RuntimeError, KeyError, OSError, json.JSONDecodeError) as exc:
+                self._bridge_send({"error": {"message": str(exc)[:300]}}, origin, 400)
+
         def do_GET(self):
+            if self.path.startswith("/bridge/"):
+                self._bridge("GET")
+                return
             try:
                 url = urlsplit(self.path)
                 if url.path == "/":
@@ -244,6 +346,9 @@ def make_handler(app: LocalApp, port: int):
                 uid = q.get("id", [""])[0]
                 if url.path == "/api/projects":
                     self._json({"projects": app.list_projects()})
+                elif url.path == "/api/models":
+                    provider = q.get("provider", [""])[0]
+                    self._json({"models": cached_models(provider) if provider in ACCOUNT_CLI else []})
                 elif url.path == "/api/accounts":
                     self._json({name: account_status(name)["installed"] for name in ACCOUNT_CLI})
                 elif url.path == "/api/status":
@@ -280,6 +385,9 @@ def make_handler(app: LocalApp, port: int):
                 self._json({"error": str(exc)[:300]}, 400)
 
         def do_POST(self):
+            if self.path.startswith("/bridge/"):
+                self._bridge("POST")
+                return
             try:
                 if not self._authorized(post=True):
                     return

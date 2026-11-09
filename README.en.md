@@ -61,7 +61,8 @@ Then pick "ChatGPT account" or "Google / Gemini account" as the provider and lea
 
 - Text still goes to OpenAI or Google, so the app still asks for consent. Usage counts against your plan's limits.
 - SinoBridge runs the tool in an empty temporary folder, read-only, and asks for a single JSON object with the translation.
-- The GitHub Pages web demo cannot do this: a browser cannot run local tools, and ChatGPT/Google AI Pro plans do not expose an API to other sites. On the web, use an API key (Gemini has a free tier; you only pay if you enable billing yourself).
+- **From the web page too:** start the local app (scripts/Start SinoBridge.command or sinobridge serve), then on the [web page](https://tuyentran-md.github.io/sinobridge/) choose "Google account (Antigravity)" or "ChatGPT account". The page sends each passage to the app on your own computer (127.0.0.1:8765), which runs the signed-in tool. The app only accepts requests from the official SinoBridge page (Origin and Host are checked). Chrome or Edge may ask for permission to access devices on your local network: allow it. Safari may block this connection; use Chrome, or the local app's own interface.
+- The Google model list comes from agy models (for example gemini-3.8-flash-medium).
 
 ## Install (command line)
 

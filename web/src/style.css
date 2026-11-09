@@ -472,3 +472,13 @@ input{caret-color:var(--cinnabar)}
 .welcome-intro h1{margin:0;color:#273b31;font:600 clamp(2.2rem,4vw,4.2rem)/1.15 var(--ui);letter-spacing:-.05em;text-wrap:balance}
 .welcome-deck{margin:20px 0 0}
 :root[data-theme=dark] .welcome-intro h1{color:#e9e9d9}
+
+/* Account bridge panel */
+.account p{margin:0 0 10px}
+.bridge-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px}
+.bridge-row .field{flex:0 0 104px;margin:0}
+.bridge-row .field>span{white-space:nowrap}
+.bridge-row .btn{flex:1;min-height:42px;white-space:nowrap}
+.field-link{display:inline-flex;align-items:center;gap:5px;font-size:.75rem;color:var(--cinnabar)}
+.field-link .ic{width:12px;height:12px}
+.note.ok{color:#406a4c}

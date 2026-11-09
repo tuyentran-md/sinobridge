@@ -504,6 +504,11 @@ input{caret-color:var(--cinnabar)}
 .faq details[open] summary::after{transform:rotate(-135deg);margin-top:-2px}
 .faq details p{margin:0 0 12px;font-size:.92rem;line-height:1.75;color:var(--egg-2);max-width:66ch}
 .faq details p:last-child{margin-bottom:22px}
+.faq-steps{margin:0 0 14px;padding:0 0 0 1.3em;max-width:66ch;font-size:.92rem;line-height:1.7;color:var(--egg-2)}
+.faq-steps li{margin:0 0 7px;padding-left:4px}
+.faq-steps li::marker{color:var(--cinnabar);font-size:.85em}
+.faq-steps b{font-weight:600;color:var(--egg)}
+:root[data-theme=dark] .faq-steps b{color:#eae7d9}
 .faq a{color:var(--cinnabar);text-underline-offset:3px}
 .faq code{font-size:.86em;padding:1px 5px;border-radius:4px;background:var(--lac-4)}
 .site-foot{max-width:1040px;margin:0 auto;padding:22px 32px 40px;display:flex;align-items:center;gap:12px;font-size:.8rem;color:var(--egg-3)}

@@ -141,8 +141,21 @@
   </div>
   <div class="faq-list">
     <details><summary>Khác gì so với dán từng đoạn vào ChatGPT hay Gemini?</summary>
-      <p>Dán tay thì vài chục trang là mỏi. SinoBridge chia sách thành từng đoạn, gửi mỗi lần một nhóm nhỏ kèm hai đoạn ngay trước đó cho model nắm mạch văn, rồi ghép lại đúng thứ tự, đặt cạnh bản gốc và xuất ra EPUB hoặc Word.</p>
-      <p>Bản dịch hay hay dở vẫn là do model bạn chọn. App chỉ lo phần việc tay chân cho bạn.</p></details>
+      <p>Dán vào khung chat thì mỗi lần model chỉ thấy một mẩu, chương sau không nhớ chương trước dịch tên ra sao, đoạn nào bị bỏ sót cũng không ai hay. SinoBridge dịch cả cuốn theo một quy trình cố định:</p>
+      <ol class="faq-steps">
+        <li><b>Tách đoạn, đánh số.</b> Sách được chia thành các đoạn ngắn theo đúng thứ tự, mỗi đoạn có số riêng nên ghép lại không lệch.</li>
+        <li><b>Dịch theo nhóm, có ngữ cảnh.</b> Mỗi lượt gửi một nhóm nhỏ kèm hai đoạn đứng trước. Model được yêu cầu giữ nguyên số liệu, đơn vị, phủ định, trích dẫn và đọc tên riêng theo Hán Việt (成都 → Thành Đô).</li>
+        <li><b>Thiếu đoạn thì dịch lại.</b> Model gộp hay bỏ sót đoạn nào thì app dịch lại riêng đoạn đó; vẫn trống thì dừng và báo, không ghép bừa.</li>
+        <li><b>Lưu sau mỗi nhóm.</b> Dừng hay tắt tab giữa chừng, lần sau chỉ dịch phần còn thiếu.</li>
+        <li><b>Đọc đối chiếu.</b> Bản dịch nằm cạnh bản gốc từng đoạn, xuất được EPUB, Word, TXT hoặc HTML song ngữ.</li>
+      </ol>
+      <p>App SinoBridge trên máy làm thêm mấy bước mà bản web chưa có:</p>
+      <ol class="faq-steps">
+        <li><b>Tên riêng và thuật ngữ thống nhất cả cuốn.</b> Tên được tra trước trong từ điển Hán Việt kèm sẵn (khoảng 11.600 mục) rồi gợi ý cho model; cách dịch đã dùng được ghi vào bộ nhớ thuật ngữ để chương sau theo chương trước.</li>
+        <li><b>Kiểm lỗi tự động khi dịch xong.</b> So số liệu, DOI, trích dẫn và đường link giữa bản gốc với bản dịch, báo chỗ thuật ngữ lệch bộ nhớ, xếp mức HIGH hay MEDIUM và hiện cảnh báo ngay cạnh đoạn trên trang song ngữ.</li>
+        <li><b>Truy được về bản gốc.</b> Mỗi đoạn ghi vị trí trong file gốc (dòng, trang, mốc thời gian phụ đề); sửa bản dịch thì lưu lại bản cũ, người sửa và lý do.</li>
+      </ol>
+      <p>Kiểm tự động chỉ bắt được lỗi dễ thấy như sai số, mất trích dẫn, lệch tên. Câu dịch có đúng ý và tự nhiên hay chưa vẫn cần người đọc lại.</p></details>
     <details><summary>Tài liệu và key của mình đi đâu?</summary>
       <p>File được đọc ngay trong trình duyệt của bạn. Lúc dịch, từng đoạn được gửi thẳng tới hãng bạn chọn (Google, OpenAI…), kèm key của bạn. Mình không có máy chủ nào đứng giữa, nên không thấy được tài liệu hay key của ai.</p>
       <p>Key chỉ được nhớ trên máy khi bạn tích “Nhớ key”.</p></details>

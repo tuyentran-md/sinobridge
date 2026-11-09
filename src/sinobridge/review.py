@@ -55,22 +55,22 @@ def approval_is_current(seg: dict) -> bool:
     return seg["status"] == "APPROVED" and appr.get("translation_hash") == text_hash(seg.get("translation"))
 
 UI = {
-    "vi": {"title": "Song ngữ: ", "draft": "BẢN NHÁP — chưa qua kiểm định", "only": "chỉ đoạn có lỗi",
-           "showzh": "hiện song song tiếng Trung", "missing": "chưa dịch", "noaudit": "chưa chạy audit",
-           "pick": "Chọn một đoạn tiếng Việt để xem đoạn nguồn tiếng Trung, lỗi kiểm định, ghi chú và lịch sử sửa.",
+    "vi": {"title": "Song ngữ: ", "draft": "Bản dịch cần đối chiếu với bản gốc", "only": "chỉ đoạn có cảnh báo",
+           "showzh": "hiện cả tiếng Trung", "missing": "chưa dịch", "noaudit": "chưa kiểm tra tự động",
+           "pick": "Chọn một đoạn để xem bản gốc tiếng Trung, các cảnh báo và lịch sử sửa.",
            "source": "Nguồn tiếng Trung", "hover": "Rê chuột lên chữ Hán để xem âm Hán Việt.", "location": "vị trí",
-           "status": "trạng thái", "issues": "Lỗi kiểm định", "noflags": "Không có cờ tự động (không đồng nghĩa với đúng nghĩa).",
+           "status": "trạng thái", "issues": "Cảnh báo tự động", "noflags": "Không có cảnh báo tự động cho đoạn này.",
            "terms": "Tên riêng / thuật ngữ", "locked": "đã khoá", "auto": "tự động", "model": "mô hình",
-           "notes": "Mơ hồ / ghi chú", "approval": "Duyệt", "notapproved": "chưa duyệt",
-           "stale": "KHÔNG còn hiệu lực: bản dịch đã đổi", "history": "Lịch sử sửa"},
-    "en": {"title": "Bilingual: ", "draft": "DRAFT — not quality approved", "only": "only passages with issues",
-           "showzh": "show Chinese alongside", "missing": "untranslated", "noaudit": "audit not run",
-           "pick": "Click an English passage to see its Chinese source, QA flags, notes and revision history.",
+           "notes": "Chỗ cần xem lại / ghi chú", "approval": "Duyệt", "notapproved": "chưa duyệt",
+           "stale": "Bản dịch đã sửa. Cần duyệt lại.", "history": "Lịch sử sửa"},
+    "en": {"title": "Bilingual: ", "draft": "Check this translation against the source", "only": "only passages with flags",
+           "showzh": "show Chinese text", "missing": "untranslated", "noaudit": "automatic checks not run",
+           "pick": "Select a passage to see its Chinese source, flags and edit history.",
            "source": "Chinese source", "hover": "Hover over a character to see its pinyin.", "location": "location",
-           "status": "status", "issues": "QA flags", "noflags": "No automatic flags (this does not mean the meaning is right).",
+           "status": "status", "issues": "QA flags", "noflags": "No automatic flags for this passage.",
            "terms": "Names / terms", "locked": "locked", "auto": "auto", "model": "model",
-           "notes": "Ambiguities / notes", "approval": "Approval", "notapproved": "not approved",
-           "stale": "NO LONGER VALID: translation changed", "history": "Revision history"},
+           "notes": "Questions / notes", "approval": "Approval", "notapproved": "not approved",
+           "stale": "Translation edited after approval. Review again.", "history": "Revision history"},
 }
 
 PAGE = """<!DOCTYPE html>

@@ -1,22 +1,20 @@
 # SinoBridge
 
-**Read, translate and research Chinese documents in English or Vietnamese, with every translated sentence traceable to its exact Chinese source.**
+**Translate Chinese books and documents into English or Vietnamese. Compare each translated passage with its source.**
 
 [Tiếng Việt](README.md) · **English**
 
-SinoBridge is an open-source (MIT) toolkit with three parts sharing one core:
+SinoBridge is an open-source tool for translating Chinese documents on your computer. Add a file, choose a language and your own AI model, then download the translation. The command-line interface also supports research workflows.
 
 | Part | What it does |
 |---|---|
-| **Sources** (connectors) | Brings in Chinese material from files (TXT, Markdown, DOCX, EPUB, PDF), public web pages (WeChat articles, Zhihu, news, blogs, Wikipedia), pages saved from your browser, video subtitles (Bilibili/Douyin `.srt`/`.vtt`) and citation exports from CNKI/Wanfang/VIP/SinoMed. A plugin interface lets anyone add more sources. |
-| **Translate & check** | Translates passage by passage, with context, into **English or Vietnamese** using the model you choose (GPT, Gemini, DeepSeek, Qwen...). Chinese **names and terms** come out in standard forms (pinyin or established English names; Hán-Việt for Vietnamese), and a per-project term memory keeps them consistent from the first chapter to the last. Automatic checks cover numbers, DOIs, citations, terminology and Chinese legal/policy context. Corrections keep their history, and an approval applies only to the exact text that was approved. |
-| **Clean output** | EPUB3 with chapters and a table of contents, DOCX, Markdown, translated `.srt`/`.vtt` subtitles, and an offline bilingual review page: click a translated sentence to see its Chinese source, QA flags, notes and revision history. |
+| **Import files** | Open EPUB, text-based PDF, Word, TXT, Markdown, HTML and subtitles. The CLI also imports public web pages and citation exports from CNKI/Wanfang/VIP/SinoMed; it does not access paid databases directly. |
+| **Translate and check** | Translate into English or Vietnamese with your own model/API key, or use Ollama locally. A term memory keeps names consistent; automatic checks flag some problems with numbers and citations. |
+| **Read and export** | Download EPUB, Word, Markdown, subtitles or offline bilingual HTML. Select a passage to see its Chinese source, notes and revision history. |
 
 ![Bilingual review page: click a translated sentence to see the Chinese source, QA flags, names and pinyin](docs/images/review-page-en.png)
 
-*The bilingual review page is a single HTML file that opens offline. Passage 2 has a red border because a number
-was mistranslated (4.8% became 8.4%). Passage 3 is selected: the name 张明华 appears as "Zhang Ming-hua" instead of
-the agreed "Zhang Minghua". Hovering over 北 shows its pinyin, "běi".*
+*In the offline bilingual review page, a red border flags a number mismatch. Select a passage to see its Chinese source, terms and review notes. Hover over 北 to see its pinyin.*
 
 ## How it works
 
@@ -32,25 +30,21 @@ flowchart LR
     T -.-> D
 ```
 
-Every translated sentence keeps its passage ID and its location in the original (line, page, block, subtitle timestamp), so you can
-always trace it back to the exact Chinese sentence.
+Each translated passage retains a source ID and location (line, page or subtitle timestamp), so you can look up the corresponding Chinese passage.
 
-## Quick start: drag-and-drop app (no programming)
+## Get started: drag and drop
 
-![Drag-and-drop app: choose a file, translate into English or Vietnamese with your own model, download EPUB/Word](docs/images/gui-en.png)
+![SinoBridge desktop browser interface](docs/images/gui-en.png)
 
-1. Install **Python 3.10+** (python.org). Download this repository (**Code → Download ZIP**) and unzip it.
-2. Double-click **scripts/Start SinoBridge.command** (macOS) or **scripts/Start SinoBridge.bat** (Windows).
-   The first run installs the libraries it needs; later runs open the app in your browser right away.
-3. Drop in a document (EPUB, PDF with a text layer, Word, TXT, subtitles…) and choose **English** or **Vietnamese**.
-4. Pick a provider (Gemini, OpenAI, DeepSeek, Qwen, OpenRouter), enter a model name and **your own API key**, tick the
-   consent box and press **Start translating**. You can stop at any time; finished passages are kept.
-5. Download **EPUB, Word, Markdown** or the **bilingual review page**.
+1. Install Python 3.10+ if needed. On GitHub select Code → Download ZIP and unzip the repository.
+2. Double-click Start SinoBridge.command (macOS) or Start SinoBridge.bat (Windows) in the scripts folder. The first run installs the required libraries.
+3. Drop in a file and choose English or Vietnamese.
+4. Choose an AI provider, enter your model name and API key, or select Ollama if you have a local model. Consent before sending text to a remote provider, then click **Translate document**.
+5. Download EPUB, Word, Markdown or the bilingual HTML file. Finished passages are kept if you stop mid-translation.
 
-The interface is available in English and Vietnamese (switch in the top corner). The app runs on your own computer
-(127.0.0.1): no account and no cloud sync. Your API key stays in memory only while translating and is never written to
-disk. Documents are stored in `~/.sinobridge/projects`. Any API charges are between you and your provider. To quit,
-press Ctrl+C in the terminal window. Command-line users can run `sinobridge serve --open`.
+The interface works in English and Vietnamese. Files are stored in the .sinobridge/projects folder under your home directory. SinoBridge does not sync them. If you translate through an API, text goes to the selected provider and any fees are billed by that provider. The API key is not saved to disk.
+
+For installation help, see [the quickstart guide](docs/quickstart-gui.md). CLI users can run the sinobridge serve --open command.
 
 ## Install (command line)
 
@@ -121,7 +115,7 @@ Numbers are compared by value, not by string:
 
 A changed value (5% → 50%) is flagged HIGH.
 
-## Publish
+## Export files
 
     sinobridge export --workspace work/book  --format epub --out out/book.epub
     sinobridge export --workspace work/book  --format epub --bilingual --out out/book-bilingual.epub
@@ -156,7 +150,7 @@ Pages carry no "draft" banners. The review status is stated once, honestly, on t
 
 - **Traceability**: every passage has an ID, its location in the original and the SHA-256 of the source; fetched web pages are saved
   as a snapshot, because web content changes.
-- **No false certainty**: automated checks are partial evidence. No semantic or scientific gate is ever passed automatically. See the
+- **Limits of automatic checks**: automated checks are partial evidence. No semantic or scientific gate is ever passed automatically. See the
   [QA policy](docs/qa-policy.md).
 - **Rights and privacy**: text goes to an API only with `--allow-external`; there is no paywall bypass and no bulk crawling, and
   robots.txt is honored. Translating a text does not remove the original author's copyright.

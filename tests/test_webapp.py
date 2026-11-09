@@ -34,7 +34,7 @@ class WebAppTests(unittest.TestCase):
         self.base = "http://127.0.0.1:" + str(self.port)
         with urlopen(self.base + "/") as r:
             self.page = r.read().decode()
-        self.assertIn("Thả sách vào.", self.page)
+        self.assertIn("Dịch tài liệu tiếng Trung", self.page)
         self.token = self.page.split("const TOKEN=")[1].split(";")[0].strip('"')
         self.assertGreater(len(self.token), 30)
 

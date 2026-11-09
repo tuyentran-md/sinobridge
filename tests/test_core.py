@@ -306,6 +306,6 @@ class EnglishTargetTests(unittest.TestCase):
             self.assertIn(b"<dc:language>en</dc:language>", z.read("OEBPS/content.opf"))
             self.assertIn(b"Draft machine translation", z.read("OEBPS/title.xhtml"))
         page = review_html(ws, root / "r.html").read_text(encoding="utf-8")
-        self.assertIn("Click an English passage", page)
+        self.assertIn("Select a passage to see its Chinese source", page)
         self.assertIn('lang="en"', page)
         tmp.cleanup()

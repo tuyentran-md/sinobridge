@@ -1,22 +1,20 @@
 # SinoBridge
 
-**Đọc, dịch và tra cứu tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh — mọi câu dịch đều truy được về đúng đoạn gốc.**
+**Dịch sách và tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh. Có thể đối chiếu từng đoạn với bản gốc.**
 
 **Tiếng Việt** · [English](README.en.md)
 
-SinoBridge là công cụ mã nguồn mở (MIT) gồm ba phần dùng chung một nền:
+SinoBridge là công cụ mã nguồn mở để dịch tài liệu trên máy tính. Bạn chọn file, ngôn ngữ và model AI đang sử dụng. Ứng dụng chia tài liệu thành các đoạn, hỗ trợ kiểm tra bản dịch và xuất file đọc. Dòng lệnh có thêm các chức năng dành cho nghiên cứu.
 
 | Phần | Làm gì |
 |---|---|
-| **Nguồn** (connectors) | Lấy tài liệu tiếng Trung từ file (TXT, Markdown, DOCX, EPUB, PDF), trang web công khai (bài WeChat, Zhihu, báo, blog, Wikipedia), trang lưu từ trình duyệt, phụ đề video (Bilibili/Douyin: .srt/.vtt), trích dẫn xuất từ CNKI/Wanfang/VIP/SinoMed. Có cơ chế plugin để cộng đồng viết thêm nguồn. |
-| **Dịch & kiểm định** | Dịch theo đoạn có ngữ cảnh sang **tiếng Việt hoặc tiếng Anh**, bằng mô hình bạn chọn (GPT, Gemini, DeepSeek, Qwen...). **Phiên âm Hán Việt tên riêng và thuật ngữ**, bộ nhớ thuật ngữ thống nhất toàn sách. Tự động kiểm số liệu, DOI, trích dẫn, thuật ngữ, ngữ cảnh pháp lý Trung Quốc; sửa có lịch sử; duyệt gắn với đúng câu đã duyệt. |
-| **Xuất bản sạch** | EPUB3 chia chương có mục lục, DOCX, Markdown, phụ đề .srt/.vtt tiếng Việt, và trang đọc song ngữ offline: bấm một câu tiếng Việt → thấy câu tiếng Trung, lỗi, ghi chú, lịch sử sửa. |
+| **Nhập tài liệu** | Mở EPUB, PDF có lớp chữ, Word, TXT, Markdown, HTML và phụ đề. Dòng lệnh còn nhận trang web công khai và file trích dẫn xuất từ CNKI/Wanfang/VIP/SinoMed; không tự truy cập các kho trả phí. |
+| **Dịch và kiểm tra** | Dịch sang tiếng Việt hoặc tiếng Anh bằng API key/model của người dùng hoặc Ollama trên máy. Bộ nhớ thuật ngữ giúp giữ cách gọi nhất quán; bộ kiểm tra tự động gắn cờ một số lỗi về số liệu và trích dẫn. |
+| **Đọc và xuất file** | Tải EPUB, Word, Markdown, phụ đề hoặc trang HTML song ngữ. Chọn một đoạn để xem bản gốc, ghi chú kiểm tra và lịch sử sửa. |
 
 ![Trang đọc song ngữ: bấm một câu tiếng Việt để xem câu tiếng Trung gốc, lỗi kiểm định, tên riêng và âm Hán Việt](docs/images/review-page.png)
 
-*Trang đọc song ngữ (một file HTML, mở offline). Đoạn 2 bị gắn viền đỏ vì số liệu sai (4,8% thành 8,4%). Đoạn 3 đang
-được chọn: tên 张明华 dịch thành "Trương Minh Hòa", khác với cách đã thống nhất "Trương Minh Hoa". Rê chuột lên
-chữ 北 sẽ hiện âm Hán Việt "bắc".*
+*Ví dụ trang đối chiếu: đoạn sai số liệu được gắn viền đỏ. Khi chọn một đoạn, phần bên phải hiển thị bản gốc, thuật ngữ và ghi chú kiểm tra. Rê chuột lên chữ 北 để xem âm Hán Việt.*
 
 ## Cách hoạt động
 
@@ -32,25 +30,21 @@ flowchart LR
     T -.-> D
 ```
 
-Mọi câu trong bản dịch đều giữ mã đoạn và vị trí trong file gốc (dòng, trang, mốc thời gian phụ đề), nên luôn
-truy ngược được về đúng câu tiếng Trung.
+Mỗi đoạn dịch có mã và vị trí trong nguồn (dòng, trang hoặc mốc thời gian phụ đề) để người đọc tìm lại đúng đoạn tiếng Trung.
 
-## Dùng ngay: giao diện kéo thả (không cần biết lập trình)
+## Cách dùng: kéo thả và dịch
 
-![Giao diện kéo thả: chọn file, chọn dịch sang tiếng Việt hoặc tiếng Anh, dịch bằng model của bạn, tải EPUB/Word](docs/images/gui-vi.png)
+![Giao diện dịch tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh](docs/images/gui-vi.png)
 
-1. Cài **Python 3.10+** (python.org). Tải repo về: **Code → Download ZIP**, rồi giải nén.
-2. Nhấp đúp **scripts/Start SinoBridge.command** (macOS) hoặc **scripts/Start SinoBridge.bat** (Windows).
-   Lần đầu ứng dụng tự cài thư viện; những lần sau mở ngay giao diện trong trình duyệt.
-3. Kéo thả tài liệu (EPUB, PDF có lớp chữ, Word, TXT, phụ đề…), chọn **dịch sang Tiếng Việt hoặc English**.
-4. Chọn nhà cung cấp (Gemini, OpenAI, DeepSeek, Qwen, OpenRouter), nhập tên model và **API key của chính bạn**, tích ô
-   đồng ý, rồi bấm **Bắt đầu dịch**. Có thể dừng giữa chừng; mở lại vẫn giữ các đoạn đã dịch.
-5. Tải **EPUB, Word, Markdown** hoặc **trang đọc song ngữ**.
+1. Cài Python 3.10+ nếu máy chưa có. Trên GitHub, chọn Code → Download ZIP rồi giải nén.
+2. Nhấp đúp file Start SinoBridge.command (macOS) hoặc Start SinoBridge.bat (Windows) trong thư mục scripts. Lần đầu ứng dụng cài thêm thư viện cần thiết.
+3. Kéo thả file vào giao diện, chọn tiếng Việt hoặc tiếng Anh.
+4. Chọn dịch vụ AI, nhập tên model và API key của bạn; hoặc chọn Ollama nếu đã cài model trên máy. Xác nhận trước khi gửi nội dung tới dịch vụ ngoài, rồi bấm **Dịch tài liệu**.
+5. Tải EPUB, Word, Markdown hoặc bản HTML song ngữ. Các đoạn đã dịch được lưu lại nếu dừng giữa chừng.
 
-Giao diện có cả tiếng Việt và tiếng Anh (nút chọn ở góc trên). Ứng dụng chạy ngay trên máy bạn (127.0.0.1): không có
-tài khoản, không đồng bộ cloud. API key chỉ giữ trong bộ nhớ khi đang dịch, không ghi ra file. Tài liệu lưu ở
-`~/.sinobridge/projects`. Phí API (nếu có) bạn trả thẳng cho nhà cung cấp. Muốn tắt, nhấn Ctrl+C trong cửa sổ lệnh.
-Xem thêm [hướng dẫn 3 bước](docs/quickstart-gui.md). Người dùng dòng lệnh có thể chạy `sinobridge serve --open`.
+Giao diện có tiếng Việt và tiếng Anh. Tài liệu lưu tại máy người dùng, trong thư mục .sinobridge/projects thuộc thư mục home. SinoBridge không tự đồng bộ tài liệu. Khi dùng API, nội dung được gửi tới dịch vụ AI đã chọn và phí (nếu có) do dịch vụ đó thu. API key không được lưu thành file.
+
+Chi tiết cài đặt: [hướng dẫn cho người mới](docs/quickstart-gui.md). Ai quen dòng lệnh có thể chạy lệnh sinobridge serve --open.
 
 ## Cài đặt (dòng lệnh)
 
@@ -154,7 +148,7 @@ Với `--target en`, trang bản quyền, mục lục và trang đọc song ng�
 
 - **Truy vết**: mỗi đoạn có mã, vị trí trong file gốc (dòng, trang, khối, mốc thời gian phụ đề), SHA-256 nguồn;
   trang web được lưu bản chụp (`source_snapshot.html`) vì nội dung web thay đổi.
-- **Không giả vờ chắc chắn**: kiểm định tự động chỉ là bằng chứng một phần; không cổng ngữ nghĩa/khoa học nào
+- **Giới hạn kiểm tra tự động**: kiểm định tự động chỉ là bằng chứng một phần; không cổng ngữ nghĩa/khoa học nào
   tự động "PASS". Xem [chính sách QA](docs/qa-policy.md).
 - **Quyền và riêng tư**: chỉ gửi văn bản ra API khi bạn bật `--allow-external`; không vượt paywall, không cào hàng loạt,
   tôn trọng robots.txt. Bản dịch không xoá bản quyền của tác giả gốc.

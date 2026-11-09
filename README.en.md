@@ -35,7 +35,24 @@ flowchart LR
 Every translated sentence keeps its passage ID and its location in the original (line, page, block, subtitle timestamp), so you can
 always trace it back to the exact Chinese sentence.
 
-## Install
+## Quick start: drag-and-drop app (no programming)
+
+![Drag-and-drop app: choose a file, translate into English or Vietnamese with your own model, download EPUB/Word](docs/images/gui-en.png)
+
+1. Install **Python 3.10+** (python.org). Download this repository (**Code → Download ZIP**) and unzip it.
+2. Double-click **scripts/Start SinoBridge.command** (macOS) or **scripts/Start SinoBridge.bat** (Windows).
+   The first run installs the libraries it needs; later runs open the app in your browser right away.
+3. Drop in a document (EPUB, PDF with a text layer, Word, TXT, subtitles…) and choose **English** or **Vietnamese**.
+4. Pick a provider (Gemini, OpenAI, DeepSeek, Qwen, OpenRouter), enter a model name and **your own API key**, tick the
+   consent box and press **Start translating**. You can stop at any time; finished passages are kept.
+5. Download **EPUB, Word, Markdown** or the **bilingual review page**.
+
+The interface is available in English and Vietnamese (switch in the top corner). The app runs on your own computer
+(127.0.0.1): no account and no cloud sync. Your API key stays in memory only while translating and is never written to
+disk. Documents are stored in `~/.sinobridge/projects`. Any API charges are between you and your provider. To quit,
+press Ctrl+C in the terminal window. Command-line users can run `sinobridge serve --open`.
+
+## Install (command line)
 
 Python 3.10+.
 
@@ -43,7 +60,7 @@ Python 3.10+.
     python3 -m venv .venv && . .venv/bin/activate
     pip install -e '.[all]'      # includes PDF and DOCX support
 
-## Quick start
+## Command-line quick start
 
 Pick the target language when you import a document (`--target en` or `--target vi`; Vietnamese is the default):
 

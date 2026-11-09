@@ -20,8 +20,13 @@ EXPORTS = {"md": exporters.markdown, "docx": exporters.docx, "epub": exporters.e
            "srt": exporters.subtitles, "vtt": exporters.subtitles}
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="sinobridge", description="Source-traceable Chinese -> Vietnamese reading, translation and research")
+    p = argparse.ArgumentParser(prog="sinobridge", description="Source-traceable Chinese -> English/Vietnamese reading, translation and research")
     sub = p.add_subparsers(dest="command", required=True)
+
+    sv = sub.add_parser("serve", help="Local drag-and-drop web interface (no cloud account)")
+    sv.add_argument("--open", action="store_true", help="Open default browser")
+    sv.add_argument("--port", type=int, default=8765)
+    sv.add_argument("--data-dir", type=Path)
 
     sub.add_parser("sources", help="List source connectors (built-in and plugins)")
 
@@ -215,6 +220,14 @@ def run(args) -> object:
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
+        if args.command == "serve":
+            from .webapp import main as serve_main
+            options = ["--port", str(args.port)]
+            if args.open:
+                options.append("--open")
+            if args.data_dir:
+                options += ["--data-dir", str(args.data_dir)]
+            return serve_main(options)
         print(json.dumps(run(args), indent=2, ensure_ascii=False))
         return 0
     except (RuntimeError, ValueError, FileNotFoundError, OSError, KeyError) as exc:

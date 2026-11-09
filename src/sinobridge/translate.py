@@ -104,14 +104,16 @@ def resolve_endpoint(provider: str, base_url: str | None) -> tuple[str, str | No
     return base, key_env, host in ("localhost", "127.0.0.1", "::1")
 
 def call_model(provider: str, model: str, source: str, context: str, kind: str, glossary: dict,
-               base_url: str | None = None, suggested_names: dict | None = None, target: str = "vi") -> dict:
+               base_url: str | None = None, suggested_names: dict | None = None, target: str = "vi",
+               credential: str | None = None) -> dict:
     user_payload = json.dumps({
         "document_type": kind, "surrounding_context_for_interpretation_only": context,
         "required_terminology": glossary, "suggested_names": suggested_names or {}, "source_chinese": source
     }, ensure_ascii=False)
     system = system_prompt(target)
     base, key_env, local = resolve_endpoint(provider, base_url)
-    key = os.getenv(key_env) if key_env else None
+    # credential: key typed into the local web app, held in memory only; otherwise the environment
+    key = credential if credential is not None else (os.getenv(key_env) if key_env else None)
     if key_env and not key and not local:
         raise RuntimeError(f"{key_env} is not set")
     if provider == "gemini":
@@ -138,7 +140,7 @@ def call_model(provider: str, model: str, source: str, context: str, kind: str, 
 
 def translate(workspace: Path, provider: str, model: str, *, allow_external: bool,
               dry_run: bool, limit: int = 1, glossary_path: Path | None = None,
-              base_url: str | None = None) -> dict:
+              base_url: str | None = None, credential: str | None = None) -> dict:
     project = load_project(workspace)
     target = project.get("target_language", "vi")
     segments = load_segments(workspace)
@@ -166,7 +168,7 @@ def translate(workspace: Path, provider: str, model: str, *, allow_external: boo
                     **{zh: vi for zh, vi in glossary.items() if zh in seg["source"]}}
         hints = {zh: r for zh, r in terms.name_hints(seg["source"], target).items() if zh not in required}
         result = call_model(provider, model, seg["source"], context, project["kind"], required, base, hints,
-                            target=target)
+                            target=target, credential=credential)
         notes = terms.record(workspace, seg["id"], result.get("entities", []), target)
         seg.update(result)
         seg["notes"] = seg.get("notes", []) + [

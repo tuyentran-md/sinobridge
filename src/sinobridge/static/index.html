@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SinoBridge — Dịch sách tiếng Trung dễ dàng</title>
+<style>
+:root{--ink:#17243a;--muted:#5f6b78;--line:#e2e6e9;--accent:#225c69;--cream:#f5f3ee;--paper:#fffdfa;--good:#1a7567;--warn:#af5c31}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--accent)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}
+.top{border-bottom:1px solid var(--line);background:#fffdf9}.top-in{max-width:1140px;margin:auto;padding:17px 28px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-weight:750;letter-spacing:-.04em;font-size:1.34rem;color:var(--ink)}.brand span{color:#a06944}
+.tag{font-size:.8rem;background:#e3eeeb;color:#275951;border-radius:999px;padding:5px 12px;font-weight:650}
+.wrap{max-width:1140px;margin:0 auto;padding:40px 28px 80px}.eyebrow{font-size:.74rem;letter-spacing:.16em;font-weight:750;color:var(--accent);text-transform:uppercase}
+h1{font-size:clamp(2.35rem,4vw,3.8rem);letter-spacing:-.06em;line-height:1.12;margin:10px 0 12px;font-weight:750;max-width:760px}
+.lede{color:var(--muted);max-width:700px;font-size:1.05rem;margin:0 0 30px}
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr);gap:22px;align-items:start}
+.card{background:var(--paper);border:1px solid #e3dfd7;box-shadow:0 5px 24px #27364c08;border-radius:16px;padding:25px;margin-bottom:18px}
+.card h2{font-size:1.05rem;margin:0 0 16px;letter-spacing:-.02em;display:flex;gap:10px;align-items:center}
+.number{font-size:.77rem;display:inline-grid;place-items:center;background:var(--ink);color:white;width:24px;height:24px;border-radius:50%;font-weight:700;flex:none}
+.drop{border:2px dashed #c4d3d0;border-radius:13px;background:#f7faf8;min-height:180px;padding:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;text-align:center;transition:background .2s,border .2s}
+.drop.drag{background:#e4f0ec;border-color:var(--accent)}.drop strong{font-size:1.05rem}.drop small{font-size:.83rem;color:var(--muted)}.file-ico{font-size:2rem;line-height:1.2}
+.pill{border:1px solid #c9d6d1;background:#fff;border-radius:8px;padding:8px 16px;font-weight:650;margin-top:8px;color:var(--accent)}
+.row{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:16px}.row label{color:var(--muted);font-size:.87rem}
+select,input[type=text],input[type=password]{width:100%;border:1px solid #cad1d4;border-radius:9px;background:white;padding:11px 12px;outline-color:var(--accent)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field{display:flex;flex-direction:column;gap:6px}.field label{color:var(--muted);font-size:.84rem;font-weight:600}
+.small{font-size:.85rem;color:var(--muted)}.hidden{display:none!important}
+button.primary{border:0;background:var(--accent);color:white;border-radius:10px;padding:12px 22px;font-weight:700}
+button.primary:hover{background:#164652}button.ghost{border:1px solid #c8d0d0;color:var(--accent);border-radius:9px;background:white;padding:9px 14px;font-weight:650}
+#notice{font-size:.89rem;white-space:pre-wrap;color:var(--muted);margin-top:10px}
+#notice.error{color:#a33c33}#notice.good{color:var(--good)}
+.file{padding:10px 12px;background:#f0f5f2;border-radius:8px;color:#285147;margin:14px 0;display:flex;justify-content:space-between;gap:8px;font-size:.87rem}
+.file strong{overflow-wrap:anywhere}.file span{white-space:nowrap}
+.progress{height:9px;background:#e4eae7;border-radius:20px;overflow:hidden}.progress div{height:100%;width:0;background:var(--accent);transition:width .3s}
+.down{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.down button{border:1px solid #c7d6d1;background:white;border-radius:8px;padding:10px 13px;color:var(--accent);font-weight:650}
+.preview{min-height:220px;border-radius:10px;background:#f9faf8;border:1px solid #e6e9e5;padding:14px;max-height:500px;overflow:auto}
+.preview .fragment{margin-bottom:17px}.preview b{display:block;font-weight:650;margin-bottom:2px}.preview .zh{color:#78818b;font: .86rem/1.5 "Songti SC","PingFang SC",serif;margin-top:5px}
+.placeholder{display:grid;place-items:center;text-align:center;min-height:180px;color:var(--muted);font-size:.94rem;padding:20px}
+hr{height:1px;border:0;background:var(--line);margin:22px 0}
+.library-item{border:1px solid var(--line);padding:11px 12px;border-radius:9px;margin:8px 0;cursor:pointer;background:#fff}
+.library-item:hover{border-color:#95b0ac}.library-item b{font-size:.9rem;display:block;overflow-wrap:anywhere}
+.library-item small{color:var(--muted)}.library-item.active{background:#edf4f1;border-color:#80a99c}
+.footer{font-size:.83rem;color:var(--muted);max-width:760px;margin-top:24px}
+input[type=checkbox]{accent-color:var(--accent);height:16px;width:16px;flex:none;margin:3px 0 0}
+#consentrow,.row.check{flex-wrap:nowrap;align-items:flex-start;gap:10px}#consentrow label,.row.check label{flex:1;min-width:0}
+details summary{cursor:pointer;font-size:.84rem;color:var(--muted)}
+@media(max-width:860px){.layout{grid-template-columns:1fr}.wrap{padding:30px 17px}.top-in{padding:14px 17px}.card{padding:19px}.fields{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in"><div class="brand">Sino<span>Bridge</span></div>
+<div style="display:flex;gap:10px;align-items:center"><span class="tag" data-i18n="tag"></span>
+<select id="uilang" aria-label="Interface language" style="width:auto;padding:6px 8px"><option value="vi">Tiếng Việt</option><option value="en">English</option></select></div></div></div>
+<main class="wrap">
+<div class="eyebrow" data-i18n="eyebrow"></div>
+<h1 data-i18n-html="h1"></h1>
+<p class="lede" data-i18n="lede"></p>
+<div class="layout">
+<div>
+<section class="card">
+<h2><span class="number">1</span> <span data-i18n="step1"></span></h2>
+<div class="drop" id="drop" tabindex="0" role="button" data-i18n-aria="dropAria">
+<div class="file-ico" aria-hidden="true">▤</div><strong data-i18n="dropHere"></strong><small data-i18n="formats"></small>
+<button type="button" class="pill" id="pick" data-i18n="pick"></button>
+<input id="fileinput" type="file" class="hidden" accept=".pdf,.epub,.docx,.txt,.md,.markdown,.html,.htm,.srt,.vtt">
+</div>
+<div class="fields" style="margin-top:16px"><div class="field"><label for="target" data-i18n="targetLabel"></label><select id="target"><option value="vi" data-i18n="toVi"></option><option value="en" data-i18n="toEn"></option></select></div>
+<div class="field"><label for="kind" data-i18n="kindLabel"></label><select id="kind"><option value="book" data-i18n="kindBook"></option><option value="paper" data-i18n="kindPaper"></option></select></div></div>
+<div id="selected" class="file hidden"></div>
+<div id="notice" role="status" aria-live="polite"></div>
+</section>
+<section class="card" id="translate-card">
+<h2><span class="number">2</span> <span data-i18n="step2"></span></h2>
+<div class="fields">
+<div class="field"><label for="provider" data-i18n="provider"></label>
+<select id="provider"><option value="gemini">Gemini</option><option value="openai">OpenAI</option><option value="deepseek">DeepSeek</option><option value="qwen">Qwen</option><option value="openrouter">OpenRouter</option><option value="ollama" data-i18n="ollama"></option></select></div>
+<div class="field"><label for="model" data-i18n="model"></label><input id="model" type="text" spellcheck="false" data-i18n-ph="modelPh"></div>
+</div>
+<div class="field" style="margin-top:15px" id="keyfield"><label for="key" data-i18n="key"></label><input id="key" type="password" autocomplete="off" data-i18n-ph="keyPh"></div>
+<div class="small" style="margin:12px 0" data-i18n="keyNote"></div>
+<div class="row" id="consentrow"><input type="checkbox" id="consent"><label for="consent" data-i18n="consent"></label></div>
+<div class="row"><button class="primary" id="run" disabled data-i18n="run"></button><button id="stop" class="ghost hidden" data-i18n="stop"></button></div>
+<div id="runstatus" class="small" style="margin:12px 0"></div>
+<div class="progress"><div id="fill"></div></div>
+</section>
+<section class="card">
+<h2><span class="number">3</span> <span data-i18n="step3"></span></h2>
+<p class="small" style="margin-top:0" data-i18n="step3Note"></p>
+<div class="row check"><input id="bilingual" type="checkbox"><label for="bilingual" data-i18n="bilingual"></label></div>
+<div class="down">
+<button data-format="epub" disabled>↓ EPUB</button>
+<button data-format="docx" disabled>↓ Word</button>
+<button data-format="md" disabled>↓ Markdown</button>
+<button data-format="srt" disabled class="hidden">↓ SRT</button>
+<button data-format="html" disabled data-i18n="dlReview"></button>
+</div>
+</section>
+</div>
+<aside>
+<section class="card"><h2 data-i18n="preview"></h2><div class="preview" id="preview"><div class="placeholder" data-i18n="previewEmpty"></div></div>
+<p class="small" data-i18n="previewNote"></p></section>
+<section class="card"><h2 data-i18n="library"></h2><div id="library"><span class="small" data-i18n="noDocs"></span></div></section>
+<section class="card"><h2 data-i18n="privacy"></h2><p class="small" data-i18n="privacyText"></p>
+<details><summary data-i18n="aboutMt"></summary><p class="small" data-i18n="aboutMtText"></p></details></section>
+</aside>
+</div>
+<p class="footer" data-i18n="footer"></p>
+</main>
+<script>
+"use strict";
+const TOKEN=__SERVER_TOKEN__;
+const header={"X-SinoBridge-Token":TOKEN};
+const byId=id=>document.getElementById(id);
+let selected=null, poller=null;
+const defaults={gemini:"gemini-2.5-flash",openai:"gpt-4.1-mini",deepseek:"deepseek-chat",qwen:"qwen-plus",openrouter:"",ollama:"qwen2.5:7b"};
+const STR={
+vi:{tag:"Miễn phí · Mã nguồn mở · Chạy trên máy bạn",eyebrow:"TỪ TÀI LIỆU TIẾNG TRUNG ĐẾN BẢN ĐỌC TIẾNG VIỆT HOẶC TIẾNG ANH",
+ h1:"Thả sách vào.<br>Dịch. Rồi đọc.",lede:"Không cần biết lập trình. Mang theo tài liệu và tài khoản AI của bạn; SinoBridge lo việc chia chương, giữ tên riêng và thuật ngữ thống nhất, kiểm tra và xuất sách.",
+ step1:"Chọn sách hoặc tài liệu",dropAria:"Thả tài liệu hoặc bấm chọn file",dropHere:"Kéo thả file vào đây",formats:"PDF, EPUB, Word, TXT, Markdown, HTML, SRT/VTT · tối đa 64 MB",pick:"Chọn file",
+ targetLabel:"Dịch sang",toVi:"Tiếng Việt",toEn:"Tiếng Anh (English)",kindLabel:"Loại tài liệu",kindBook:"Sách / tài liệu thông thường",kindPaper:"Bài báo khoa học",
+ step2:"Dịch bằng model của bạn",provider:"Nhà cung cấp",ollama:"Ollama (chạy trên máy)",model:"Tên model",modelPh:"Model bạn có quyền sử dụng",key:"API key cá nhân",keyPh:"Dán API key của bạn (chỉ giữ trong RAM khi chạy)",
+ keyNote:"SinoBridge không cung cấp model hay thanh toán API. Key không ghi vào file. Nội dung tài liệu chỉ được gửi tới nhà cung cấp khi bạn đồng ý.",
+ consent:"Tôi có quyền xử lý tài liệu và đồng ý gửi nội dung tới dịch vụ đã chọn.",run:"Bắt đầu dịch",stop:"Dừng sau đoạn hiện tại",
+ step3:"Đọc hoặc tải bản dịch",step3Note:"EPUB cho máy đọc sách, Word để chỉnh sửa, hoặc trang đọc song ngữ để đối chiếu. Bản chưa được người duyệt ghi rõ là bản nháp ở trang đầu.",
+ bilingual:"Kèm câu tiếng Trung gốc trong EPUB / Word",dlReview:"↓ Đọc song ngữ",preview:"Bản xem trước",previewEmpty:"Sau khi thêm tài liệu, bạn sẽ thấy đoạn gốc và bản dịch ngay tại đây.",
+ previewNote:"Mỗi câu dịch gắn với đúng đoạn tiếng Trung, dễ kiểm tra khi cần.",library:"Thư viện trên máy",noDocs:"Chưa có tài liệu.",privacy:"Riêng tư & bản quyền",
+ privacyText:"Tài liệu lưu trên chính máy đang chạy ứng dụng. Không có tài khoản SinoBridge, không đồng bộ cloud và không gửi gì tới dịch vụ AI khi bạn chưa bấm dịch. Chỉ dịch hoặc chia sẻ nội dung bạn có quyền sử dụng.",
+ aboutMt:"Về bản dịch tự động",aboutMtText:"Kiểm tra số liệu và thuật ngữ chỉ phát hiện được một số lỗi. Sách, tài liệu pháp lý và nghiên cứu y khoa vẫn cần người đọc xác minh nội dung quan trọng.",
+ footer:"SinoBridge là dự án mã nguồn mở (MIT). Giao diện này chạy tại 127.0.0.1 trên máy của bạn, không phải dịch vụ lưu sách trên Internet. Muốn tắt, quay về cửa sổ lệnh và nhấn Ctrl+C.",
+ noDoc:"Chưa có tài liệu.",segments:"đoạn",translatedOf:"đoạn đã dịch",untranslated:"[chưa dịch]",noText:"Không có văn bản để xem trước.",
+ error:"Lỗi: ",unknown:"Không xác định",stopping:"Đang dừng sau yêu cầu model hiện tại…",stopped:"Đã dừng. Có thể tiếp tục với những đoạn còn lại.",
+ doneN:"Đã dịch xong {t}/{n} đoạn. Có thể tải về.",workingN:"Đang dịch: {t}/{n} đoạn",partialN:"Đã có {t}/{n} đoạn. Bấm tiếp tục để dịch nốt.",readyN:"Sẵn sàng dịch {n} đoạn.",
+ modelError:"Có lỗi khi gọi model: ",modelErrorHint:"Thử lại model hoặc key",doneNote:"Bản dịch đã tạo. Bạn có thể xuất EPUB hoặc Word.",tooBig:"File vượt 64 MB.",
+ importing:"Đang nhập và đọc tài liệu…",imported:"Đã nhập tài liệu. Chọn model và bấm dịch.",cannotRead:"Không thể đọc tài liệu: ",chooseFirst:"Chọn tài liệu trước.",
+ needConsent:"Cần đồng ý gửi nội dung tài liệu tới nhà cung cấp AI đã chọn.",working:"Đang xử lý. API key chỉ dùng trong bộ nhớ khi dịch.",stopNote:"Đang dừng sau đoạn hiện tại.",
+ exportFail:"Không xuất được file",to:"→ "},
+en:{tag:"Free · Open source · Runs on your computer",eyebrow:"FROM CHINESE DOCUMENTS TO READABLE ENGLISH OR VIETNAMESE",
+ h1:"Drop in a book.<br>Translate. Read.",lede:"No programming needed. Bring your document and your own AI account; SinoBridge splits it into passages, keeps names and terms consistent, checks the result and builds the book.",
+ step1:"Choose a book or document",dropAria:"Drop a document or click to choose a file",dropHere:"Drag and drop a file here",formats:"PDF, EPUB, Word, TXT, Markdown, HTML, SRT/VTT · up to 64 MB",pick:"Choose file",
+ targetLabel:"Translate into",toVi:"Vietnamese (Tiếng Việt)",toEn:"English",kindLabel:"Document type",kindBook:"Book / general document",kindPaper:"Scientific paper",
+ step2:"Translate with your own model",provider:"Provider",ollama:"Ollama (runs locally)",model:"Model name",modelPh:"A model you have access to",key:"Your API key",keyPh:"Paste your API key (kept in memory only while running)",
+ keyNote:"SinoBridge provides no model and no API billing. Your key is never written to disk. Document text goes to the provider only after you agree.",
+ consent:"I have the right to process this document and agree to send its text to the selected service.",run:"Start translating",stop:"Stop after the current passage",
+ step3:"Read or download the translation",step3Note:"EPUB for e-readers, Word for editing, or the bilingual review page for checking. Drafts not yet reviewed by a person say so on the first page.",
+ bilingual:"Include the original Chinese in EPUB / Word",dlReview:"↓ Bilingual review",preview:"Preview",previewEmpty:"After you add a document, the source and its translation appear here.",
+ previewNote:"Every translated sentence is linked to its Chinese passage, so it is easy to check.",library:"Library on this computer",noDocs:"No documents yet.",privacy:"Privacy & copyright",
+ privacyText:"Documents stay on the computer running the app. There is no SinoBridge account and no cloud sync, and nothing is sent to an AI service until you start translating. Only translate or share content you have the right to use.",
+ aboutMt:"About machine translation",aboutMtText:"Number and terminology checks catch only some errors. Books, legal documents and medical research still need a reader to verify what matters.",
+ footer:"SinoBridge is an open-source (MIT) project. This interface runs at 127.0.0.1 on your computer; it is not an online book service. To quit, go back to the terminal window and press Ctrl+C.",
+ noDoc:"No document yet.",segments:"passages",translatedOf:"passages translated",untranslated:"[untranslated]",noText:"No text to preview.",
+ error:"Error: ",unknown:"Unknown",stopping:"Stopping after the current model request…",stopped:"Stopped. You can continue with the remaining passages.",
+ doneN:"Translated {t}/{n} passages. Ready to download.",workingN:"Translating: {t}/{n} passages",partialN:"{t}/{n} passages done. Press start to continue.",readyN:"Ready to translate {n} passages.",
+ modelError:"The model call failed: ",modelErrorHint:"Check the model name or key",doneNote:"Translation ready. You can export EPUB or Word.",tooBig:"File is larger than 64 MB.",
+ importing:"Importing and reading the document…",imported:"Document imported. Choose a model and start translating.",cannotRead:"Cannot read the document: ",chooseFirst:"Choose a document first.",
+ needConsent:"Please agree to send the document text to the selected AI provider.",working:"Working. Your API key is used in memory only.",stopNote:"Stopping after the current passage.",
+ exportFail:"Could not export the file",to:"→ "}};
+let LANG=localStorage.getItem("sinobridge-ui")||((navigator.language||"").toLowerCase().startsWith("vi")?"vi":"en");
+const t=(k,v={})=>(STR[LANG][k]||STR.en[k]||k).replace(/\{(\w+)\}/g,(_,x)=>v[x]);
+function applyLang(){
+  document.documentElement.lang=LANG;byId("uilang").value=LANG;
+  document.title=LANG==="vi"?"SinoBridge — Dịch tài liệu tiếng Trung":"SinoBridge — Translate Chinese documents";
+  document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=t(e.dataset.i18n));
+  document.querySelectorAll("[data-i18n-html]").forEach(e=>e.innerHTML=t(e.dataset.i18nHtml));
+  document.querySelectorAll("[data-i18n-ph]").forEach(e=>e.placeholder=t(e.dataset.i18nPh));
+  document.querySelectorAll("[data-i18n-aria]").forEach(e=>e.setAttribute("aria-label",t(e.dataset.i18nAria)));
+  if(!localStorage.getItem("sinobridge-target"))byId("target").value=LANG;
+  if(selected)update(selected);else byId("runstatus").textContent=t("noDoc");
+}
+byId("uilang").onchange=e=>{LANG=e.target.value;localStorage.setItem("sinobridge-ui",LANG);applyLang();updateLibrary();};
+byId("target").onchange=e=>localStorage.setItem("sinobridge-target",e.target.value);
+if(localStorage.getItem("sinobridge-target"))byId("target").value=localStorage.getItem("sinobridge-target");
+function note(text,kind=""){const n=byId("notice");n.textContent=text;n.className=kind;}
+function label(project){return project.title+" · "+project.segments+" "+t("segments")+" · "+t("to")+(project.target==="en"?"English":"Tiếng Việt");}
+function choose(project){selected=project;byId("selected").classList.remove("hidden");byId("selected").textContent=label(project);byId("run").disabled=false;update(project);updateLibrary(); }
+function update(project){
+  selected=project;
+  let j=project.job||{state:"idle"};
+  let translated=project.translated||0, n=project.segments;
+  const done=translated>=n && n>0;
+  const working=["running","stopping"].includes(j.state);
+  byId("run").disabled=working||done;
+  byId("stop").classList.toggle("hidden",!working);
+  byId("runstatus").textContent=
+     j.state==="error"?t("error")+(j.error||t("unknown")):
+     j.state==="stopping"?t("stopping"):
+     j.state==="stopped"?t("stopped"):
+     done?t("doneN",{t:translated,n}):
+     working?t("workingN",{t:translated,n}):
+     translated?t("partialN",{t:translated,n}):
+     t("readyN",{n});
+  byId("fill").style.width=(n?100*translated/n:0)+"%";
+  document.querySelectorAll("[data-format]").forEach(b=>b.disabled=!translated);
+  document.querySelector('[data-format="srt"]').classList.toggle("hidden",project.kind!=="subtitle");
+  byId("selected").textContent=label(project);
+  byId("selected").classList.remove("hidden");
+  if(j.state==="error") note(t("modelError")+(j.error||t("modelErrorHint")),"error");
+  if(j.state==="done") note(t("doneNote"),"good");
+}
+async function api(path,opt={}){
+  const options={...opt,headers:{...header,...(opt.headers||{})}};
+  const response=await fetch(path,options);
+  const type=response.headers.get("content-type")||"";
+  const payload=type.includes("application/json")?await response.json():null;
+  if(!response.ok)throw Error((payload&&payload.error)||("HTTP "+response.status));
+  return payload;
+}
+async function updateLibrary(){
+ try {
+  const data=await api("/api/projects");
+  const parent=byId("library");parent.replaceChildren();
+  if(!data.projects.length){parent.textContent=t("noDocs");return;}
+  for(const p of data.projects){
+   const box=document.createElement("div");box.className="library-item"+(selected&&p.id===selected.id?" active":"");
+   const b=document.createElement("b");b.textContent=p.title;box.append(b);
+   const s=document.createElement("small");s.textContent=p.translated+"/"+p.segments+" "+t("translatedOf")+" · "+(p.target==="en"?"EN":"VI");box.append(s);
+   box.addEventListener("click",()=>{choose(p);loadPreview(p.id);});
+   parent.append(box);
+  }
+  if(!selected){choose(data.projects[0]);loadPreview(data.projects[0].id);}
+ }catch(e){note(e.message,"error");}
+}
+async function loadPreview(id){
+  try {
+    const data=await api("/api/preview?id="+encodeURIComponent(id));
+    const box=byId("preview");box.replaceChildren();
+    if(!data.segments.length){box.textContent=t("noText");return;}
+    for(const seg of data.segments){
+      const div=document.createElement("div");div.className="fragment";
+      const b=document.createElement("b");b.textContent=seg.translation||t("untranslated");
+      const zh=document.createElement("div");zh.className="zh";zh.textContent=seg.source;
+      div.append(b,zh);box.append(div);
+    }
+  }catch(e){note(e.message,"error");}
+}
+function refreshInProgress(){
+ if(poller)clearInterval(poller);
+ poller=setInterval(async()=>{
+   if(!selected)return;
+   try{
+    const p=await api("/api/status?id="+selected.id);
+    update(p);
+    if(["done","error","stopped"].includes(p.job.state)){clearInterval(poller);poller=null;loadPreview(p.id);updateLibrary();}
+    else if(p.translated!==window._previousCount){window._previousCount=p.translated;loadPreview(p.id);}
+   }catch(e){clearInterval(poller);poller=null;note(e.message,"error");}
+ },1200);
+}
+async function upload(file){
+ if(!file)return;
+ if(file.size>64*1024*1024){note(t("tooBig"),"error");return;}
+ note(t("importing"));
+ try{
+  const response=await api("/api/upload",{
+    method:"POST",headers:{"X-Filename":encodeURIComponent(file.name),"X-Document-Kind":byId("kind").value,"X-Target-Language":byId("target").value},
+    body:file
+  });
+  choose(response);loadPreview(response.id);note(t("imported"),"good");
+ }catch(e){note(t("cannotRead")+e.message,"error");}
+}
+const drop=byId("drop");
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag");});
+drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");upload(e.dataTransfer.files[0]);});
+drop.addEventListener("click",e=>{if(e.target.id!=="pick")byId("fileinput").click();});
+drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();byId("fileinput").click();}});
+byId("pick").onclick=()=>byId("fileinput").click();
+byId("fileinput").onchange=e=>upload(e.target.files[0]);
+function providerChanged(){
+ const isLocal=byId("provider").value==="ollama";
+ byId("keyfield").classList.toggle("hidden",isLocal);
+ byId("consentrow").classList.toggle("hidden",isLocal);
+ byId("model").value=defaults[byId("provider").value]||"";
+}
+byId("provider").onchange=providerChanged;providerChanged();
+byId("run").onclick=async()=>{
+ if(!selected){note(t("chooseFirst"),"error");return;}
+ const provider=byId("provider").value;
+ if(provider!=="ollama"&&!byId("consent").checked){note(t("needConsent"),"error");return;}
+ const key=byId("key").value.trim();
+ try{
+  await api("/api/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    id:selected.id,provider,model:byId("model").value.trim(),key
+  })});
+  byId("key").value="";
+  note(t("working"),"good");
+  byId("run").disabled=true;refreshInProgress();
+ }catch(e){note(e.message,"error");}
+};
+byId("stop").onclick=async()=>{
+ if(!selected)return;
+ try{await api("/api/cancel",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:selected.id})});note(t("stopNote"));}
+ catch(e){note(e.message,"error");}
+};
+document.querySelectorAll("[data-format]").forEach(b=>b.addEventListener("click",async()=>{
+ if(!selected)return;
+ try{
+  const fmt=b.dataset.format, bilingual=byId("bilingual").checked?"1":"0";
+  const response=await fetch("/api/download?id="+encodeURIComponent(selected.id)+"&format="+fmt+"&bilingual="+bilingual,{headers:header});
+  if(!response.ok){const data=await response.json();throw Error(data.error||t("exportFail"));}
+  const blob=await response.blob(),url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="SinoBridge-"+selected.title.replace(/\.[^.]*$/,"")+"."+fmt;
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+ }catch(e){note(e.message,"error");}
+}));
+applyLang();
+updateLibrary().then(()=>{
+ if(selected&&["running","stopping"].includes((selected.job||{}).state))refreshInProgress();
+});
+</script>
+</body>
+</html>

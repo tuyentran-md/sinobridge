@@ -36,4 +36,5 @@ Status markers: ✅ done · 🔜 next · 💡 proposed
 - 💡 Print-ready PDF via Typst/LaTeX; bilingual side-by-side PDF
 
 ## Interface
-- 💡 Local web app (`sinobridge serve`): edit, approve and resolve issues in the browser; same JSONL store
+- ✅ Local web app (sinobridge serve): drag-and-drop, BYOK/Ollama, progress, preview, EPUB/DOCX/HTML downloads
+- 🔜 In-browser editing, approval and issue adjudication (currently use CLI/offline review)

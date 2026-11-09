@@ -35,7 +35,24 @@ flowchart LR
 Mọi câu trong bản dịch đều giữ mã đoạn và vị trí trong file gốc (dòng, trang, mốc thời gian phụ đề), nên luôn
 truy ngược được về đúng câu tiếng Trung.
 
-## Cài đặt
+## Dùng ngay: giao diện kéo thả (không cần biết lập trình)
+
+![Giao diện kéo thả: chọn file, chọn dịch sang tiếng Việt hoặc tiếng Anh, dịch bằng model của bạn, tải EPUB/Word](docs/images/gui-vi.png)
+
+1. Cài **Python 3.10+** (python.org). Tải repo về: **Code → Download ZIP**, rồi giải nén.
+2. Nhấp đúp **scripts/Start SinoBridge.command** (macOS) hoặc **scripts/Start SinoBridge.bat** (Windows).
+   Lần đầu ứng dụng tự cài thư viện; những lần sau mở ngay giao diện trong trình duyệt.
+3. Kéo thả tài liệu (EPUB, PDF có lớp chữ, Word, TXT, phụ đề…), chọn **dịch sang Tiếng Việt hoặc English**.
+4. Chọn nhà cung cấp (Gemini, OpenAI, DeepSeek, Qwen, OpenRouter), nhập tên model và **API key của chính bạn**, tích ô
+   đồng ý, rồi bấm **Bắt đầu dịch**. Có thể dừng giữa chừng; mở lại vẫn giữ các đoạn đã dịch.
+5. Tải **EPUB, Word, Markdown** hoặc **trang đọc song ngữ**.
+
+Giao diện có cả tiếng Việt và tiếng Anh (nút chọn ở góc trên). Ứng dụng chạy ngay trên máy bạn (127.0.0.1): không có
+tài khoản, không đồng bộ cloud. API key chỉ giữ trong bộ nhớ khi đang dịch, không ghi ra file. Tài liệu lưu ở
+`~/.sinobridge/projects`. Phí API (nếu có) bạn trả thẳng cho nhà cung cấp. Muốn tắt, nhấn Ctrl+C trong cửa sổ lệnh.
+Xem thêm [hướng dẫn 3 bước](docs/quickstart-gui.md). Người dùng dòng lệnh có thể chạy `sinobridge serve --open`.
+
+## Cài đặt (dòng lệnh)
 
 Python 3.10+.
 
@@ -43,7 +60,7 @@ Python 3.10+.
     python3 -m venv .venv && . .venv/bin/activate
     pip install -e '.[all]'      # gồm hỗ trợ PDF và DOCX
 
-## Dùng nhanh
+## Dùng nhanh bằng dòng lệnh
 
 Chọn ngôn ngữ đích khi nạp tài liệu: `--target vi` (mặc định) hoặc `--target en`.
 

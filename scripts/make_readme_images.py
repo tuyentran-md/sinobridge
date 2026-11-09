@@ -63,6 +63,40 @@ def terminal_en_html() -> str:
     cmd = '<span class="p">$</span> sinobridge name 诸葛亮 孔子 张明华 欧阳明 --to en   <span class="m"># + places with --type place</span><br>'
     return TERMINAL.replace("__BODY__", cmd + "<br>".join(lines))
 
+def gui_shots(browser):
+    """Screenshots of the drag-and-drop app (gui-vi.png, gui-en.png) with the demo article."""
+    import threading
+    from sinobridge.webapp import create_server
+    for lang in ("en", "vi"):
+        data = Path(tempfile.mkdtemp())
+        srv = create_server(data, 8799)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            ctx = browser.new_context(viewport={"width": 1280, "height": 1000}, device_scale_factor=2,
+                                      locale="vi-VN" if lang == "vi" else "en-US")
+            pg = ctx.new_page()
+            pg.goto("http://127.0.0.1:8799/")
+            pg.select_option("#target", lang)
+            pg.set_input_files("#fileinput", str(ROOT / "examples" / "demo_article_zh.md"))
+            pg.wait_for_selector("#selected:not(.hidden)")
+            uid = next(d for d in data.iterdir() if d.is_dir())
+            demo = json.loads((ROOT / "examples" / f"demo_article_{lang}.json").read_text(encoding="utf-8"))
+            segs = load_segments(uid)
+            for seg, text in zip(segs, demo["translations"]):
+                seg.update(translation=text, status="DRAFT")
+            save_segments(uid, segs)
+            terms.record(uid, segs[1]["id"], demo["entities"], lang)
+            audit(uid)
+            pg.reload()
+            pg.wait_for_timeout(1000)
+            pg.evaluate("window.scrollTo(0, 0)")
+            pg.screenshot(path=str(OUT / f"gui-{lang}.png"))
+            ctx.close()
+        finally:
+            srv.shutdown()
+            srv.server_close()
+            shutil.rmtree(data, ignore_errors=True)
+
 def main():
     from playwright.sync_api import sync_playwright
     OUT.mkdir(parents=True, exist_ok=True)
@@ -97,6 +131,7 @@ def main():
             pg = browser.new_page(viewport={"width": 900, "height": 300}, device_scale_factor=2)
             pg.goto((tmp / "term.html").as_uri())
             pg.screenshot(path=str(OUT / "hanviet-cli.png"), full_page=True)
+            gui_shots(browser)
             browser.close()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

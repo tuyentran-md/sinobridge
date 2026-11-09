@@ -26,7 +26,7 @@ sino = "sinobridge.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-sinobridge = ["data/*.tsv", "data/*.md"]
+sinobridge = ["data/*.tsv", "data/*.md", "static/*.html"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

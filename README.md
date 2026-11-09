@@ -12,6 +12,29 @@ SinoBridge là công cụ mã nguồn mở (MIT) gồm ba phần dùng chung m�
 | **Dịch & kiểm định** | Dịch theo đoạn có ngữ cảnh, bằng mô hình bạn chọn (GPT, Gemini, DeepSeek, Qwen...). **Phiên âm Hán Việt tên riêng và thuật ngữ**, bộ nhớ thuật ngữ thống nhất toàn sách. Tự động kiểm số liệu, DOI, trích dẫn, thuật ngữ, ngữ cảnh pháp lý Trung Quốc; sửa có lịch sử; duyệt gắn với đúng câu đã duyệt. |
 | **Xuất bản sạch** | EPUB3 chia chương có mục lục, DOCX, Markdown, phụ đề .srt/.vtt tiếng Việt, và trang đọc song ngữ offline: bấm một câu tiếng Việt → thấy câu tiếng Trung, lỗi, ghi chú, lịch sử sửa. |
 
+![Trang đọc song ngữ: bấm một câu tiếng Việt để xem câu tiếng Trung gốc, lỗi kiểm định, tên riêng và âm Hán Việt](docs/images/review-page.png)
+
+*Trang đọc song ngữ (một file HTML, mở offline). Đoạn 2 bị gắn viền đỏ vì số liệu sai (4,8% thành 8,4%). Đoạn 3 đang
+được chọn: tên 张明华 dịch thành "Trương Minh Hòa", khác với cách đã thống nhất "Trương Minh Hoa". Rê chuột lên
+chữ 北 sẽ hiện âm Hán Việt "bắc".*
+
+## Cách hoạt động
+
+```mermaid
+flowchart LR
+    A["📄 Nguồn tiếng Trung<br/>file · trang web · phụ đề<br/>trích dẫn CNKI/Wanfang"] --> B["Tách đoạn<br/>mỗi đoạn có mã + vị trí gốc"]
+    B --> C["Dịch từng đoạn<br/>GPT · Gemini · DeepSeek...<br/>+ gợi ý tên Hán Việt"]
+    C --> D["Kiểm định tự động<br/>số liệu · DOI · trích dẫn<br/>tên riêng/thuật ngữ thống nhất"]
+    D --> E["Người đọc soát<br/>sửa có lịch sử · duyệt"]
+    E --> F["📚 Xuất bản<br/>EPUB · DOCX · Markdown<br/>phụ đề .srt · trang song ngữ"]
+    T[("Bộ nhớ thuật ngữ<br/>诸葛亮 → Gia Cát Lượng")] -.-> C
+    C -.-> T
+    T -.-> D
+```
+
+Mọi câu trong bản dịch đều giữ mã đoạn và vị trí trong file gốc (dòng, trang, mốc thời gian phụ đề), nên luôn
+truy ngược được về đúng câu tiếng Trung.
+
 ## Cài đặt
 
 Python 3.10+.
@@ -49,6 +72,8 @@ server tương thích OpenAI (`--provider openai-compatible --base-url ...`). Xe
   biết âm luôn được gắn cờ để người kiểm tra.
 - Khi dịch, mô hình được gợi ý sẵn các tên đã biết và phải liệt kê tên riêng và thuật ngữ nó gặp. Tên gốc Trung Quốc
   được chuẩn hoá về Hán Việt; tên nước ngoài phiên âm bằng chữ Hán (特朗普) giữ dạng quen dùng (Trump).
+![Phiên âm Hán Việt tên riêng: tra từ điển trước, rồi ghép âm từng chữ; chữ đa âm được gắn cờ](docs/images/hanviet-cli.png)
+
 - **Bộ nhớ thuật ngữ** của từng dự án (`terms.json`) giữ cách dịch thống nhất từ chương 1 đến chương cuối. Kiểm định
   báo `TERM_INCONSISTENT` khi một đoạn dịch khác bộ nhớ.
 
@@ -76,8 +101,15 @@ Xuất bản:
     sinobridge export --workspace work/sach  --format docx --out out/sach.docx
     sinobridge export --workspace work/video --format srt  --out out/video.vi.srt
 
+<img src="docs/images/epub-bilingual.png" alt="EPUB song ngữ: câu tiếng Việt, bên dưới là câu tiếng Trung gốc" width="320" align="right">
+
+**EPUB song ngữ** (hình bên): mỗi đoạn tiếng Việt có đoạn tiếng Trung gốc ngay bên dưới, chia chương, có mục lục,
+đạt chuẩn EPUBCheck. Bỏ `--bilingual` để có bản chỉ tiếng Việt.
+
 Sản phẩm không có dấu "nháp" trên từng trang; trạng thái duyệt được ghi **một lần, trung thực** ở trang bản quyền
 (ví dụ "Bản dịch nháp: 120/300 đoạn đã được người duyệt"). Mỗi đoạn vẫn có mã neo ẩn trỏ về đoạn gốc.
+
+<br clear="right">
 
 ## Tra cứu nghiên cứu tiếng Trung
 
@@ -132,6 +164,9 @@ giấy phép MIT.
 Dữ liệu Hán Việt kèm theo (`src/sinobridge/data/`) dựng từ Wiktionary (qua kaikki.org), CVDICT của Phong Phan
 (dựa trên CC-CEDICT) và Unicode Unihan; phát hành theo **CC BY-SA 4.0**, xem
 [src/sinobridge/data/README.md](src/sinobridge/data/README.md).
+
+Ảnh minh hoạ dùng bài viết hư cấu trong `examples/demo_article_zh.md`, tạo lại bằng
+`python3 scripts/make_readme_images.py` (cần Playwright).
 
 ## Kiểm thử
 

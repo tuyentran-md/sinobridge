@@ -73,7 +73,9 @@ h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;color:var(--mu
 .issue{border-left:3px solid var(--low);padding:.2rem .5rem;margin:.3rem 0;background:#fff;font-size:.9rem}
 .issue.CRITICAL,.issue.HIGH{border-color:var(--hi)}.issue.MEDIUM{border-color:var(--med)}
 .rev{font-size:.88rem;border-top:1px dashed var(--line);padding:.4rem 0}.rev del{color:var(--muted)}
-code{font-size:.85em}.hv{cursor:help;border-bottom:1px dotted #bbb}.hv:hover{background:#e8f0ff}.filters label{font-size:.85rem;margin-right:.6rem}
+code{font-size:.85em}.hv{cursor:help;border-bottom:1px dotted #bbb;position:relative}.hv:hover{background:#e8f0ff}
+.hv:hover::after{content:attr(data-hv);position:absolute;left:-.2rem;bottom:125%;white-space:nowrap;
+background:#1d2939;color:#fff;font:600 .8rem/1.2 system-ui,sans-serif;padding:.25rem .45rem;border-radius:4px;z-index:5}.filters label{font-size:.85rem;margin-right:.6rem}
 @media (max-width:800px){main{grid-template-columns:1fr;height:auto}#side{border-left:0;border-top:1px solid var(--line)}}
 </style></head><body>
 <header><b>__TITLE__</b><span class="draft">BẢN NHÁP — chưa qua kiểm định</span>
@@ -86,13 +88,14 @@ code{font-size:.85em}.hv{cursor:help;border-bottom:1px dotted #bbb}.hv:hover{bac
 const D=JSON.parse(document.getElementById('data').textContent);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const rank={CRITICAL:0,HIGH:1,MEDIUM:2,LOW:3};
-const zhHints=t=>[...t].map(c=>D.hints[c]?`<span class="hv" title="${esc(D.hints[c])}">${esc(c)}</span>`:esc(c)).join('');
+const zhHints=t=>[...t].map(c=>D.hints[c]?`<span class="hv" data-hv="${esc(D.hints[c])}">${esc(c)}</span>`:esc(c)).join('');
 const worst=s=>(D.issues[s.id]||[]).map(i=>i.severity).sort((a,b)=>rank[a]-rank[b])[0];
 function render(){
   const only=document.getElementById('onlyIssues').checked, zh=document.getElementById('showZh').checked;
   document.getElementById('text').innerHTML=D.segments.filter(s=>!only||worst(s)).map(s=>{
     const w=worst(s), cls=['seg',s.kind==='heading'?'h':'',s.translation?'':'missing',w?'sev-'+w:''].join(' ');
-    const body=s.translation?esc(s.translation):'[chưa dịch] '+esc(s.source);
+    const strip=t=>s.kind==='heading'?String(t).replace(/^\\s*#+\\s*/,''):t;
+    const body=s.translation?esc(strip(s.translation)):'[chưa dịch] '+esc(strip(s.source));
     return `<div class="${cls}" data-id="${s.id}" id="seg-${s.id}">${body}${zh&&s.translation?`<div class="zh" style="margin-top:.3rem;font-size:.95rem">${esc(s.source)}</div>`:''}</div>`}).join('');
 }
 function show(id){
@@ -103,7 +106,7 @@ function show(id){
   const terms=Object.entries(D.terms).filter(([zh])=>s.source.includes(zh));
   const appr=s.approval?`${esc(s.approval.reviewer)} · ${esc(s.approval.utc)} · ${esc(s.approval.evidence)}${s.approval_current?'':' <b style="color:var(--hi)">(KHÔNG còn hiệu lực: bản dịch đã đổi)</b>'}`:'chưa duyệt';
   document.getElementById('side').innerHTML=`
-  <h3>Nguồn tiếng Trung <span class="tag">(rê chuột lên chữ Hán để xem âm Hán Việt)</span></h3><div class="zh">${zhHints(s.source)}</div>
+  <h3>Nguồn tiếng Trung</h3><div class="zh">${zhHints(s.source)}</div><p class="tag">Rê chuột lên chữ Hán để xem âm Hán Việt.</p>
   <p class="tag">ID <code>${esc(s.id)}</code> · vị trí <code>${esc(s.location)}</code> · ${esc(s.kind)} · trạng thái <b>${esc(s.status)}</b>${s.model?` · model ${esc(s.model.provider)}/${esc(s.model.name)}`:''}</p>
   <h3>Lỗi kiểm định (${iss.length})</h3>${iss.length?iss.map(i=>`<div class="issue ${esc(i.severity)}"><b>${esc(i.severity)}</b> ${esc(i.code)}<br>${esc(i.detail)}</div>`).join(''):'<p class="tag">Không có cờ tự động (không đồng nghĩa với đúng nghĩa).</p>'}
   <h3>Tên riêng / thuật ngữ (${terms.length})</h3>${terms.length?terms.map(([zh,t])=>`<div class="issue ${t.status==='locked'?'':'LOW'}"><b>${esc(zh)}</b> → ${esc(t.vi||'?')} <span class="tag">${esc(t.type||'')} · ${t.status==='locked'?'đã khoá':'tự động'}${t.model_rendering?' · mô hình: '+esc(t.model_rendering):''}</span></div>`).join(''):'<p class="tag">—</p>'}

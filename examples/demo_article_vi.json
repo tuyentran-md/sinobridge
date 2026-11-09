@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic demo for README screenshots. Paragraph 2 has a deliberate number error (4.8 -> 8.4) and paragraph 3 a deliberate name inconsistency (Hoa -> Hòa), so the QA flags are visible.",
+  "translations": [
+    "# Bệnh viện Nhi Thành Đô triển khai phẫu thuật xâm lấn tối thiểu kiểu mới (ví dụ hư cấu)",
+    "Tháng 3/2025, nhóm ngoại khoa của Bệnh viện Nhi thành phố Thành Đô, tỉnh Tứ Xuyên đã hoàn thành ca phẫu thuật nội soi ổ bụng thứ 100.",
+    "Trưởng nhóm, GS. Trương Minh Hoa cho biết tỷ lệ biến chứng sau mổ giảm từ 12,5% xuống 8,4%, thời gian nằm viện trung bình rút ngắn còn 3,2 ngày.",
+    "Ông Trương Minh Hòa cho biết kỹ thuật này được đưa vào Bắc Kinh lần đầu năm 2019, hiện đã mở rộng tới Trùng Khánh, Tây An và các thành phố khác.",
+    "Các chuyên gia lưu ý số liệu trên đến từ quan sát tại một trung tâm, chưa thể chứng minh quan hệ nhân quả."
+  ],
+  "first_draft_of_last": "Các chuyên gia lưu ý số liệu trên đến từ quan sát tại một trung tâm, chưa thể chứng minh mối liên hệ.",
+  "entities": [
+    {"zh": "张明华", "vi": "Trương Minh Hoa", "type": "person", "origin": "chinese"},
+    {"zh": "成都", "vi": "Thành Đô", "type": "place", "origin": "chinese"},
+    {"zh": "四川省", "vi": "tỉnh Tứ Xuyên", "type": "place", "origin": "chinese"},
+    {"zh": "北京", "vi": "Bắc Kinh", "type": "place", "origin": "chinese"},
+    {"zh": "重庆", "vi": "Trùng Khánh", "type": "place", "origin": "chinese"},
+    {"zh": "西安", "vi": "Tây An", "type": "place", "origin": "chinese"},
+    {"zh": "腹腔镜手术", "vi": "phẫu thuật nội soi ổ bụng", "type": "term", "origin": "chinese"}
+  ]
+}

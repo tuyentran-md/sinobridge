@@ -127,7 +127,7 @@ try:
         page.locator('#api-key').fill('synthetic-key')
         page.wait_for_function("!document.querySelector('#start').disabled")
         page.locator('#start').click()
-        page.wait_for_function("document.querySelector('#checkpoint').textContent.includes('đoạn trên máy')")
+        page.wait_for_function("document.querySelector('#checkpoint').textContent.includes('đoạn trên trình duyệt này ·')")
         page.locator('#home').click();assert page.locator('#welcome').is_visible()
         page.locator('#library .library-item').click()
         page.locator('#stop').click()

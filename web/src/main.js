@@ -4,7 +4,7 @@ import '@fontsource/be-vietnam-pro/600.css';
 import '@fontsource/be-vietnam-pro/700.css';
 import './style.css';
 import {extractFile,syntheticSample} from './parse.js';
-import {listProjects,loadProject,saveProject,saveCheckpoints} from './database.js';
+import {listProjects,loadProject,saveProject,saveCheckpoints,deleteProject} from './database.js';
 import {exportProject} from './export.js';
 import {PROVIDERS,KeyError,translateProject,listModels,preferredModel,bridge,bridgeInfo} from './engine.js';
 
@@ -43,7 +43,7 @@ function renderInlay(p){
 function checkpointNote(){
   const p=state.project,box=el('checkpoint');
   box.hidden=!p;
-  if(p)box.textContent=p.savedAt?'Đã lưu '+count(p)+'/'+p.segments.length+' đoạn trên máy · '+new Date(p.savedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):count(p)?'Đã lưu '+count(p)+'/'+p.segments.length+' đoạn trên trình duyệt này.':'Đã lưu tài liệu trên trình duyệt này. Chưa có đoạn dịch.';
+  if(p)box.textContent=p.savedAt?'Đã lưu '+count(p)+'/'+p.segments.length+' đoạn trên trình duyệt này · '+new Date(p.savedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):count(p)?'Đã lưu '+count(p)+'/'+p.segments.length+' đoạn trên trình duyệt này.':'Đã lưu tài liệu trên trình duyệt này. Chưa có đoạn dịch.';
 }
 
 function rowFor(s,i){
@@ -68,6 +68,7 @@ function renderRows(){
   el('page-number').value=state.page+1;el('page-number').max=pages;
   el('page-count').textContent='/ '+pages;
   el('reader-range').textContent='Đoạn '+(start+1)+'–'+Math.min(start+PAGE,p.segments.length)+' / '+p.segments.length;
+  document.querySelector('.pagination').hidden=pages<=1;
   el('page-prev').disabled=state.page===0;
   el('show-more').disabled=state.page===pages-1;
 }
@@ -97,9 +98,14 @@ function renderLibrary(){
     item.setAttribute('role','button');item.tabIndex=0;
     const name=document.createElement('strong');name.textContent=project.name;
     const detail=document.createElement('small');detail.textContent=count(project)+'/'+project.total+' · '+(project.target==='en'?'EN':'VI');
-    item.append(name,detail);
+    const del=document.createElement('button');
+    del.type='button';del.className='library-del';del.textContent='×';
+    del.title='Xóa khỏi thư viện';del.setAttribute('aria-label','Xóa '+project.name);
+    del.addEventListener('click',e=>{e.stopPropagation();removeProject(project);});
+    del.addEventListener('keydown',e=>e.stopPropagation());
+    item.append(name,detail,del);
     const open=async()=>{
-      if(state.working&&state.project?.id!==project.id)return;
+      if(state.working&&state.project?.id!==project.id){status('Đang dịch '+state.project.name+'. Bấm Dừng trước khi mở tài liệu khác.','error');return;}
       try{
         const p=state.project?.id===project.id?state.project:await loadProject(project.id);
         if(!p)throw new Error('Không tìm thấy tài liệu đã lưu.');
@@ -111,6 +117,14 @@ function renderLibrary(){
     item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
     lib.append(item);
   }
+}
+async function removeProject(project){
+  if(state.working&&state.project?.id===project.id){status('Đang dịch tài liệu này. Bấm Dừng trước khi xóa.','error');return;}
+  if(!confirm('Xóa “'+project.name+'” và các đoạn đã dịch khỏi trình duyệt này?'))return;
+  try{await deleteProject(project.id);}catch(e){status('Không xóa được: '+e.message,'error');return;}
+  state.projects=state.projects.filter(x=>x.id!==project.id);
+  if(state.project?.id===project.id){state.project=null;state.home=true;}
+  view();status('Đã xóa '+project.name+' khỏi thư viện.','ok');
 }
 function controls(){
   const p=state.project,working=state.working||state.importing,done=p?count(p):0,complete=p&&done===p.segments.length;

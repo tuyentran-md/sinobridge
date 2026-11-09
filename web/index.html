@@ -39,7 +39,7 @@
         <select id="provider">
           <option value="agy">Tài khoản Google · qua app trên máy</option>
           <option value="codex">Tài khoản ChatGPT · qua app trên máy</option>
-          <option value="gemini" selected>Google Gemini · API key, có gói miễn phí</option>
+          <option value="gemini" selected>Google Gemini · có gói miễn phí</option>
           <option value="openai">OpenAI (GPT)</option>
           <option value="openrouter">OpenRouter · nhiều model</option>
           <option value="deepseek">DeepSeek</option>
@@ -116,7 +116,7 @@
         <li><b>Chọn cách dịch</b>Gemini, GPT hoặc model của riêng bạn.</li>
         <li><b>Đọc &amp; lưu</b>Đối chiếu từng đoạn, xuất EPUB hay Word.</li>
       </ol>
-      <p class="welcome-footnote"><span aria-hidden="true">◆</span> Dùng key hoặc tài khoản của chính bạn. <a href="#workflow">Cách dịch &amp; lưu tiến độ</a></p>
+      <p class="welcome-footnote"><span aria-hidden="true">◆</span> Dùng key hoặc tài khoản của chính bạn. <a href="#faq">Cách hoạt động</a></p>
     </div>
     <div class="pane" id="pane" hidden>
       <div class="reader-tools">
@@ -135,27 +135,44 @@
   </main>
 </div>
 
-<section class="workflow" id="workflow" aria-labelledby="h-workflow">
-  <h2 id="h-workflow">Một cuốn sách được dịch thế nào?</h2>
-  <ol class="workflow-steps">
-    <li><h3>Chia nhỏ, giữ thứ tự</h3><p>Ứng dụng tách văn bản thành các đoạn, gửi từng nhóm nhỏ tới model bạn chọn. Không gửi nguyên cuốn sách trong một lần; hai đoạn nguồn trước đó được thêm làm ngữ cảnh gần.</p></li>
-    <li><h3>Lưu xong mới dịch tiếp</h3><p>Mỗi nhóm dịch xong được lưu ngay trên trình duyệt này. Bấm Dừng, rồi chọn lại tài liệu trong thư viện và bấm Dịch tiếp: những đoạn đã lưu được bỏ qua. Không cần copy lại từng phần.</p></li>
-    <li><h3>Đọc và mang bản dịch đi</h3><p>Chọn Bản dịch để đọc liền mạch, Song ngữ để đối chiếu hoặc Bản gốc. Mỗi trang đọc hiển thị tối đa 200 đoạn. Có thể tải EPUB, Word, TXT hoặc HTML ngay khi mới dịch một phần.</p></li>
-  </ol>
-  <details><summary>Khác gì so với copy–paste vào Gemini hoặc ChatGPT?</summary><p>SinoBridge lo việc chia đoạn, xếp lượt dịch, giữ thứ tự, ghép bản gốc với bản dịch, lưu tiến độ và xuất file. Chất lượng vẫn phụ thuộc vào model và cách người đọc kiểm tra; ứng dụng không tự bảo đảm bản dịch hay hơn chat, không giữ toàn bộ cuốn sách trong ngữ cảnh và chưa có bộ nhớ thuật ngữ hay kiểm định số liệu ở bản web.</p></details>
-  <details><summary>Sách vài nghìn trang có dùng được không?</summary><p>Bản web nhận tối đa 32 MB, 8 triệu ký tự văn bản và PDF tối đa 900 trang; PDF scan cần OCR trước. Đây là giới hạn nhập file, không phải cam kết mọi máy đều dịch được sách lớn. Sách dài nên chia theo chương hoặc tập, dịch thử một chương để xem chất lượng, tốc độ và hạn mức. Giữ tab mở khi dịch; tắt máy hoặc đóng tab sẽ ngừng dịch. Model dùng key hoặc tài khoản của chính bạn, không có lượt dịch chung miễn phí từ SinoBridge.</p></details>
-  <details><summary>Checkpoint nằm ở đâu, có mất không?</summary><p>Tài liệu và các đoạn dịch đã lưu nằm trong bộ nhớ của trình duyệt trên máy này. Mở lại đúng trình duyệt và địa chỉ trang, chọn tài liệu ở thư viện để tiếp tục. Chuyển máy, dùng chế độ riêng tư hoặc xóa dữ liệu trang có thể làm mất tiến độ; checkpoint không tự đồng bộ lên cloud. Hãy tải bản dịch định kỳ. File EPUB/Word tải xuống là bản đọc, không phải bản sao checkpoint có thể nhập lại để phục hồi tiến độ. Nhóm đang dịch dở lúc đóng tab có thể phải dịch lại.</p></details>
-</section>
-
 <section class="faq" id="faq" aria-labelledby="h-faq">
-  <h2 id="h-faq">Hỏi đáp</h2>
-  <details><summary>Tài liệu và key của tôi đi đâu?</summary><p>File được đọc ngay trong trình duyệt. Khi dịch, từng đoạn văn được gửi thẳng tới nhà cung cấp model bạn chọn (ví dụ Google), kèm key của bạn; không có máy chủ SinoBridge nào ở giữa. Key chỉ được lưu trên máy nếu bạn tích "Nhớ key". Bản dịch đã lưu nằm trên trình duyệt này. Đóng tab sẽ ngừng dịch; mở lại trang và chọn tài liệu trong thư viện để dịch tiếp. Xóa dữ liệu trang có thể làm mất tiến độ.</p></details>
-  <details><summary>Lấy key Gemini miễn phí thế nào?</summary><p>Vào Google AI Studio (aistudio.google.com/apikey), đăng nhập tài khoản Google, bấm "Create API key" rồi dán vào ô API key. Gói miễn phí có giới hạn số lần gọi mỗi phút và mỗi ngày; khi chạm giới hạn, SinoBridge tự chờ rồi dịch tiếp. Ở gói miễn phí, Google có thể dùng dữ liệu gửi lên để cải thiện dịch vụ, nên đừng dịch tài liệu nhạy cảm bằng gói này.</p></details>
-  <details><summary>Tôi có tài khoản ChatGPT Plus hoặc Google AI Pro, dùng được không?</summary><p>Được. Cài và đăng nhập công cụ dòng lệnh chính thức của hãng một lần (Antigravity CLI <code>agy</code> cho tài khoản Google, Codex CLI cho tài khoản ChatGPT), rồi mở app SinoBridge trên máy. Trên trang này, chọn "Tài khoản Google" hoặc "Tài khoản ChatGPT": trang gửi từng đoạn tới app trên máy bạn (127.0.0.1), app gọi công cụ đã đăng nhập. Không cần API key; lượt dùng tính vào gói của bạn. Chrome hoặc Edge có thể hỏi quyền truy cập thiết bị trong mạng cục bộ, hãy bấm Cho phép.</p></details>
-  <details><summary>"Chạy trên máy" là gì?</summary><p>Trình duyệt tải một model nhỏ (Qwen 2.5, vài trăm MB đến vài GB) và dịch bằng GPU của máy bạn, không cần key. Cần Chrome hoặc Edge mới trên máy tính có WebGPU. Model nhỏ dịch kém hơn nhiều so với Gemini hay GPT.</p></details>
-  <details><summary>Bản dịch có chính xác không?</summary><p>Đây là bản nháp máy dịch. Tên riêng, thuật ngữ chuyên ngành và bảng biểu có thể sai, hãy đối chiếu với bản gốc ngay bên cạnh. PDF scan (ảnh chụp) chưa nhận dạng chữ.</p></details>
-  <details><summary>Bản quyền</summary><p>Chỉ dịch và chia sẻ tài liệu bạn có quyền sử dụng. Trang này không lưu hay phân phối sách. SinoBridge là mã nguồn mở MIT.</p></details>
+  <div class="faq-head">
+    <h2 id="h-faq">Hỏi đáp</h2>
+    <p>Mấy câu bạn bè hay hỏi khi mình đưa SinoBridge cho dùng thử.</p>
+  </div>
+  <div class="faq-list">
+    <details><summary>Khác gì so với dán từng đoạn vào ChatGPT hay Gemini?</summary>
+      <p>Dán tay thì vài chục trang là mỏi. SinoBridge chia sách thành từng đoạn, gửi mỗi lần một nhóm nhỏ kèm hai đoạn ngay trước đó cho model nắm mạch văn, rồi ghép lại đúng thứ tự, đặt cạnh bản gốc và xuất ra EPUB hoặc Word.</p>
+      <p>Bản dịch hay hay dở vẫn là do model bạn chọn. App chỉ lo phần việc tay chân cho bạn.</p></details>
+    <details><summary>Tài liệu và key của mình đi đâu?</summary>
+      <p>File được đọc ngay trong trình duyệt của bạn. Lúc dịch, từng đoạn được gửi thẳng tới hãng bạn chọn (Google, OpenAI…), kèm key của bạn. Mình không có máy chủ nào đứng giữa, nên không thấy được tài liệu hay key của ai.</p>
+      <p>Key chỉ được nhớ trên máy khi bạn tích “Nhớ key”.</p></details>
+    <details><summary>Lấy key Gemini miễn phí ở đâu?</summary>
+      <p>Vào <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>, đăng nhập Google, bấm “Create API key” rồi dán vào ô API key là xong.</p>
+      <p>Gói miễn phí giới hạn số lượt mỗi phút và mỗi ngày. Chạm giới hạn thì app tự chờ rồi thử lại; nếu hết lượt trong ngày, bạn đợi rồi bấm Dịch tiếp. Ở gói miễn phí Google có thể dùng dữ liệu để cải thiện dịch vụ, nên đừng dịch tài liệu nhạy cảm bằng key này.</p></details>
+    <details><summary>Mình có ChatGPT Plus hoặc Google AI Pro, dùng được không?</summary>
+      <p>Được, khỏi cần key. Cài và đăng nhập công cụ chính thức của hãng một lần: <code>agy</code> (Antigravity) cho tài khoản Google, Codex cho tài khoản ChatGPT. Sau đó mở app SinoBridge trên máy và chọn “Tài khoản Google” hoặc “Tài khoản ChatGPT” ở mục Dịch bằng.</p>
+      <p>Trang này gửi từng đoạn xuống app trên máy bạn, app gọi công cụ đã đăng nhập, nên lượt dùng tính vào gói của bạn. Chrome hoặc Edge có thể hỏi quyền truy cập mạng cục bộ, bấm Cho phép. <a href="https://github.com/tuyentran-md/sinobridge#d%C3%B9ng-t%C3%A0i-kho%E1%BA%A3n-chatgpt-ho%E1%BA%B7c-google" target="_blank" rel="noopener">Hướng dẫn cài app</a></p></details>
+    <details><summary>Sách dài cả nghìn trang có dịch được không?</summary>
+      <p>Được, miễn file dưới 32 MB (tối đa khoảng 8 triệu chữ, PDF tối đa 900 trang). Sách dày thì bạn nên dịch thử một chương trước để xem chất lượng, tốc độ và hạn mức tài khoản rồi hẵng chạy cả cuốn.</p>
+      <p>Khi đọc, mỗi trang hiện 200 đoạn cho máy khỏi đơ. Trong lúc dịch nhớ để tab mở.</p></details>
+    <details><summary>Đang dịch mà lỡ tắt tab thì sao?</summary>
+      <p>Không sao. Mỗi nhóm dịch xong được lưu ngay vào trình duyệt. Mở lại trang, chọn sách trong thư viện, bấm Dịch tiếp là chạy tiếp từ chỗ dở; chỉ nhóm đang dịch đúng lúc tắt là phải làm lại.</p>
+      <p>Có điều tiến độ chỉ nằm trên trình duyệt này: đổi máy, dùng tab ẩn danh hay xóa dữ liệu trang là mất. Thỉnh thoảng bạn tải bản dịch về cho chắc.</p></details>
+    <details><summary>“Chạy trên máy” là gì?</summary>
+      <p>Trình duyệt tải một model nhỏ (Qwen 2.5, từ vài trăm MB đến vài GB) và dịch bằng card đồ họa của máy bạn, không cần key, không gửi chữ nào ra ngoài. Cần Chrome hoặc Edge bản mới trên máy tính có WebGPU.</p>
+      <p>Nói thật là model nhỏ dịch kém hơn Gemini hay GPT khá nhiều, hợp để thử hoặc đọc lướt.</p></details>
+    <details><summary>Bản dịch có tin được không?</summary>
+      <p>Đây là bản nháp máy dịch. Tên riêng, thuật ngữ chuyên ngành và bảng biểu hay sai, nên bạn đọc song ngữ để đối chiếu với bản gốc ngay bên cạnh. PDF scan (ảnh chụp) thì cần OCR trước, app chưa đọc được chữ trong ảnh.</p></details>
+    <details><summary>Chuyện bản quyền</summary>
+      <p>Bạn chỉ dịch và chia sẻ tài liệu mình có quyền dùng nhé. Trang này không lưu hay phát tán sách của ai. SinoBridge là mã nguồn mở, giấy phép MIT.</p></details>
+  </div>
 </section>
+<footer class="site-foot">
+  <span class="seal" aria-hidden="true">譯</span>
+  <p>SinoBridge · mã nguồn mở MIT</p>
+  <nav><a href="https://github.com/tuyentran-md/sinobridge" target="_blank" rel="noopener">GitHub</a><a href="https://github.com/tuyentran-md/sinobridge/issues" target="_blank" rel="noopener">Báo lỗi, góp ý</a></nav>
+</footer>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>

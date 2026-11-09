@@ -158,6 +158,13 @@ try:
             page.locator("#file").set_input_files(str(pathlib.Path(d) / ("out." + fmt)))
             page.wait_for_function('document.querySelector("#current").textContent.includes("out.' + fmt + '")', timeout=15000)
             assert page.locator("#preview .row").count() > 0, fmt
+
+        # Deleting a book removes it from the library and returns home.
+        before = page.locator("#library .library-item").count()
+        page.once("dialog", lambda dialog: dialog.accept())
+        page.locator("#library .library-item.active .library-del").click()
+        page.wait_for_function("document.querySelectorAll('#library .library-item').length === %d" % (before - 1))
+        page.locator("#welcome").wait_for(state="visible")
         assert not errors, errors
 
         # A wrong key is reported as a key problem.
@@ -208,7 +215,7 @@ try:
             app_server.shutdown(); app_server.server_close()
         ctx.close(); browser.close()
     print("BROWSER_SMOKE_PASS: import, key + model list, batched translation with 429 retry, "
-          "persistence, 4 exports, opt-in key storage, wrong-key message, account via local app bridge, no real model calls")
+          "persistence, 4 exports, opt-in key storage, wrong-key message, account via local app bridge, delete from library, no real model calls")
 finally:
     try:
         os.killpg(server.pid, signal.SIGTERM)

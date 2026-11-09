@@ -9,6 +9,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
+    "@fontsource/be-vietnam-pro": "^5.3.0",
     "@mlc-ai/web-llm": "0.2.87",
     "docx": "^9.5.1",
     "jszip": "3.10.1",

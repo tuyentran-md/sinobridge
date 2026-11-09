@@ -3,114 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#fbfaf7">
-<meta name="description" content="Dịch sách và tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh ngay trong trình duyệt. Không cần tài khoản hay API key.">
+<meta name="theme-color" content="#1a110e">
+<meta name="description" content="Dịch sách và tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh, đọc song song với bản gốc. Chạy trong trình duyệt, dùng key Gemini miễn phí hoặc model của bạn.">
 <title>SinoBridge — Dịch tài liệu tiếng Trung</title>
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 </head>
 <body>
-<header class="top">
-  <div class="shell top-in">
-    <a class="brand" href="./" aria-label="SinoBridge">Sino<span>Bridge</span></a>
-    <a class="ghost-link" href="https://github.com/tuyentran-md/sinobridge" rel="noopener" target="_blank">GitHub</a>
-  </div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4h6v6m0-6-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="bar">
+  <a class="brand" href="./" aria-label="SinoBridge"><span class="seal" aria-hidden="true">译</span>SinoBridge</a>
+  <p class="doc" id="current" hidden></p>
+  <nav class="bar-nav"><a href="#faq">Hỏi đáp</a><a href="https://github.com/tuyentran-md/sinobridge" rel="noopener" target="_blank">GitHub</a></nav>
 </header>
 
-<main class="shell">
-  <section class="hero">
-    <h1>Dịch tài liệu tiếng Trung</h1>
-    <p class="lead">Chọn file, chọn ngôn ngữ, rồi bắt đầu dịch.</p>
-    <p class="note">Chạy ngay trong trình duyệt. Không cần tài khoản hay API key.</p>
-  </section>
+<div class="workspace">
+  <aside class="rail" aria-label="Điều khiển">
+    <section class="block" aria-labelledby="h-doc">
+      <div class="block-head"><h2 id="h-doc">Tài liệu</h2><button id="pick" type="button" class="btn ghost small"><svg class="ic"><use href="#i-up"/></svg>Chọn file</button></div>
+      <input hidden id="file" type="file" accept=".txt,.md,.markdown,.epub,.pdf,.docx,.html,.htm">
+      <div id="library" class="library"></div>
+      <button id="library-more" class="linklike more" type="button" hidden></button>
+    </section>
 
-  <div class="layout">
-    <div class="flow">
-      <section class="step" id="s1" data-state="active" aria-labelledby="step-1">
-        <h2 id="step-1"><span class="dot" aria-hidden="true">1</span>Tài liệu</h2>
-        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Thả hoặc chọn tài liệu">
-          <strong>Thả tài liệu vào đây</strong>
-          <span>EPUB, PDF có lớp chữ, Word, TXT</span>
-          <button id="pick" type="button" class="btn quiet">Chọn file</button>
-          <input hidden id="file" type="file" accept=".txt,.md,.markdown,.epub,.pdf,.docx,.html,.htm">
-        </div>
-        <p class="current" id="current" hidden></p>
-        <p class="hint" id="sample-hint">Chưa có file? <button id="try-sample" class="linklike" type="button">Thử với đoạn mẫu</button></p>
-      </section>
+    <section class="block" aria-labelledby="h-model">
+      <h2 id="h-model">Model</h2>
+      <label class="field"><span>Dịch bằng</span>
+        <select id="provider">
+          <option value="gemini">Google Gemini · có gói miễn phí</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="openrouter">OpenRouter · nhiều model</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="qwen">Qwen (Alibaba Cloud)</option>
+          <option value="local">Chạy trên máy · không cần key</option>
+        </select>
+      </label>
+      <div id="key-block">
+        <label class="field"><span class="field-row">API key <a id="key-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key Gemini miễn phí<svg class="ic"><use href="#i-out"/></svg></a></span>
+          <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Dán key vào đây">
+        </label>
+        <label class="check"><input id="remember" type="checkbox"><span>Nhớ key trên máy này</span></label>
+      </div>
+      <label class="field"><span>Tên model</span>
+        <input id="model" list="model-list" autocomplete="off" spellcheck="false">
+        <datalist id="model-list"></datalist>
+      </label>
+      <p id="model-note" class="note"></p>
+      <fieldset class="seg" aria-label="Dịch sang">
+        <legend>Dịch sang</legend>
+        <label><input type="radio" name="target" value="vi" checked><span>Tiếng Việt</span></label>
+        <label><input type="radio" name="target" value="en"><span>English</span></label>
+      </fieldset>
+    </section>
 
-      <section class="step" id="s2" aria-labelledby="step-2">
-        <h2 id="step-2"><span class="dot" aria-hidden="true">2</span>Thiết lập</h2>
-        <div class="fields">
-          <label class="field"><span>Dịch sang</span>
-            <select id="target"><option value="vi">Tiếng Việt</option><option value="en">Tiếng Anh</option></select>
-          </label>
-          <label class="field"><span>Model</span>
-            <select id="model">
-              <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 2.5 1.5B</option>
-              <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Qwen 2.5 0.5B · máy yếu</option>
-              <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">Qwen 2.5 3B · tốt hơn, nặng hơn</option>
-            </select>
-          </label>
-        </div>
-        <p id="gpu-status" class="hint">Đang kiểm tra trình duyệt…</p>
-        <div class="actions">
-          <button id="start" class="btn primary" type="button" disabled>Bắt đầu dịch</button>
-          <button id="stop" class="btn quiet" type="button" hidden>Dừng</button>
-        </div>
-        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Tiến độ dịch"><div id="fill"></div></div>
-        <p id="status" class="status" role="status" aria-live="polite">Chọn một tài liệu để bắt đầu.</p>
-      </section>
+    <section class="block run" aria-label="Dịch">
+      <div class="run-buttons">
+        <button id="start" class="btn primary" type="button" disabled>Bắt đầu dịch</button>
+        <button id="stop" class="btn ghost" type="button" hidden>Dừng</button>
+      </div>
+      <div class="inlay" id="inlay" role="progressbar" aria-label="Tiến độ dịch" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+      <p id="status" class="status" role="status" aria-live="polite">Thả một tài liệu tiếng Trung để bắt đầu.</p>
+    </section>
 
-      <section class="step" id="s3" aria-labelledby="step-3">
-        <h2 id="step-3"><span class="dot" aria-hidden="true">3</span>Kết quả</h2>
-        <div class="downloads">
-          <button data-export="epub" type="button" class="btn solid" disabled>Tải EPUB</button>
-          <button data-export="docx" type="button" class="btn solid" disabled>Tải Word</button>
-          <button data-export="html" type="button" class="btn quiet" disabled>Bản song ngữ</button>
-          <button data-export="txt" type="button" class="btn quiet" disabled>Văn bản</button>
-        </div>
-        <label class="check"><input id="bilingual" type="checkbox"><span>Kèm bản gốc tiếng Trung</span></label>
-      </section>
+    <section class="block" aria-labelledby="h-out">
+      <h2 id="h-out">Tải về</h2>
+      <div class="downloads">
+        <button data-export="epub" type="button" class="btn solid" disabled><svg class="ic"><use href="#i-down"/></svg>EPUB</button>
+        <button data-export="docx" type="button" class="btn solid" disabled><svg class="ic"><use href="#i-down"/></svg>Word</button>
+        <button data-export="html" type="button" class="btn ghost" disabled>Song ngữ HTML</button>
+        <button data-export="txt" type="button" class="btn ghost" disabled>TXT</button>
+      </div>
+      <label class="check"><input id="bilingual" type="checkbox"><span>Kèm bản gốc trong EPUB, Word</span></label>
+    </section>
+  </aside>
+
+  <main class="reader" id="reader" aria-label="Bản gốc và bản dịch">
+    <div class="welcome" id="welcome">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Thả hoặc chọn tài liệu tiếng Trung">
+        <h1>Thả tài liệu tiếng Trung vào đây</h1>
+        <p class="drop-types">EPUB · PDF có lớp chữ · Word · TXT · Markdown · HTML</p>
+        <div class="drop-actions"><span class="btn primary">Chọn file</span><button id="try-sample" type="button" class="btn ghost">Thử đoạn mẫu</button></div>
+      </div>
+      <ol class="how">
+        <li><b>Thả file</b>Đọc ngay trong trình duyệt, không tải lên đâu cả.</li>
+        <li><b>Dán key Gemini</b>Miễn phí ở Google AI Studio, hoặc dùng key GPT, DeepSeek, Qwen.</li>
+        <li><b>Bấm dịch</b>Đọc song song từng đoạn, tải EPUB hoặc Word.</li>
+      </ol>
     </div>
+    <div class="pane" id="pane" hidden>
+      <div class="pane-head"><span>Bản gốc</span><span></span><span class="pane-tr"><span id="target-label">Bản dịch</span><span class="done-count" id="done-count"></span></span></div>
+      <div id="preview" class="rows"></div>
+      <button id="show-more" class="btn ghost more-rows" type="button" hidden></button>
+    </div>
+  </main>
+</div>
 
-    <aside class="side">
-      <section class="side-block">
-        <div class="side-head"><h2>Xem trước</h2><span id="done-count" class="count" hidden></span></div>
-        <div id="preview" class="preview"><p class="empty">Thêm tài liệu để xem các đoạn đầu.</p></div>
-      </section>
-      <section class="side-block">
-        <div class="side-head"><h2>Tài liệu gần đây</h2></div>
-        <div id="library" class="library"><p class="empty small">Chưa có tài liệu.</p></div>
-        <button id="library-more" class="linklike more" type="button" hidden></button>
-      </section>
-    </aside>
-  </div>
-
-  <section class="more-info" aria-labelledby="learn">
-    <h2 id="learn">Tìm hiểu thêm</h2>
-    <details>
-      <summary>Tài liệu của tôi đi đâu?</summary>
-      <p>File được đọc và dịch ngay trong trình duyệt, không gửi lên máy chủ của SinoBridge. Bản dịch lưu trong bộ nhớ trình duyệt trên máy này, đóng tab vẫn mở lại dịch tiếp được. Xoá dữ liệu trang web thì thư viện cũng mất.</p>
-    </details>
-    <details>
-      <summary>Vì sao lần đầu chạy chậm?</summary>
-      <p>Lần đầu, trình duyệt tải model về máy (từ vài trăm MB đến vài GB, tuỳ model). Những lần sau dùng lại bản đã tải. Cần Chrome hoặc Edge bản mới trên máy tính có hỗ trợ WebGPU.</p>
-    </details>
-    <details>
-      <summary>Bản dịch có chính xác không?</summary>
-      <p>Model chạy trên máy nhỏ hơn nhiều model cloud nên có thể dịch sai, nhất là thuật ngữ chuyên ngành, tên riêng và bảng biểu. Hãy xem đây là bản nháp. PDF scan (ảnh chụp) chưa được nhận dạng chữ.</p>
-    </details>
-    <details>
-      <summary>Tôi có tài khoản ChatGPT hoặc Gemini, dùng được không?</summary>
-      <p>Gói ChatGPT/Gemini chỉ dùng trong ứng dụng của họ, SinoBridge không đăng nhập thay bạn được. Nếu muốn dùng model cloud (GPT, Gemini, DeepSeek, Qwen…) bằng API key của mình, hãy dùng bản ứng dụng đầy đủ trên <a href="https://github.com/tuyentran-md/sinobridge" target="_blank" rel="noopener">GitHub</a>, có thêm phiên âm Hán-Việt, bộ nhớ thuật ngữ và kiểm tra số liệu.</p>
-    </details>
-    <details>
-      <summary>Bản quyền</summary>
-      <p>Chỉ dịch và chia sẻ tài liệu bạn có quyền sử dụng. Trang này không lưu hay phân phối sách.</p>
-    </details>
-  </section>
-
-  <footer><span>SinoBridge · mã nguồn mở MIT</span><a href="https://github.com/tuyentran-md/sinobridge" rel="noopener" target="_blank">Mã nguồn</a></footer>
-</main>
+<section class="faq" id="faq" aria-labelledby="h-faq">
+  <h2 id="h-faq">Hỏi đáp</h2>
+  <details><summary>Tài liệu và key của tôi đi đâu?</summary><p>File được đọc ngay trong trình duyệt. Khi dịch, từng đoạn văn được gửi thẳng tới nhà cung cấp model bạn chọn (ví dụ Google), kèm key của bạn; không có máy chủ SinoBridge nào ở giữa. Key chỉ được lưu trên máy nếu bạn tích "Nhớ key". Bản dịch lưu trong bộ nhớ trình duyệt, đóng tab vẫn mở lại dịch tiếp được.</p></details>
+  <details><summary>Lấy key Gemini miễn phí thế nào?</summary><p>Vào Google AI Studio (aistudio.google.com/apikey), đăng nhập tài khoản Google, bấm "Create API key" rồi dán vào ô API key. Gói miễn phí có giới hạn số lần gọi mỗi phút và mỗi ngày; khi chạm giới hạn, SinoBridge tự chờ rồi dịch tiếp. Ở gói miễn phí, Google có thể dùng dữ liệu gửi lên để cải thiện dịch vụ, nên đừng dịch tài liệu nhạy cảm bằng gói này.</p></details>
+  <details><summary>Tôi có tài khoản ChatGPT Plus hoặc Google AI Pro, dùng được không?</summary><p>Gói thuê bao ứng dụng không đi kèm API, nên không đăng nhập thay được. Bạn cần API key riêng (Gemini có gói miễn phí). Bản ứng dụng đầy đủ trên GitHub có thêm phiên âm Hán-Việt, bộ nhớ thuật ngữ và kiểm tra số liệu.</p></details>
+  <details><summary>"Chạy trên máy" là gì?</summary><p>Trình duyệt tải một model nhỏ (Qwen 2.5, vài trăm MB đến vài GB) và dịch bằng GPU của máy bạn, không cần key. Cần Chrome hoặc Edge mới trên máy tính có WebGPU. Model nhỏ dịch kém hơn nhiều so với Gemini hay GPT.</p></details>
+  <details><summary>Bản dịch có chính xác không?</summary><p>Đây là bản nháp máy dịch. Tên riêng, thuật ngữ chuyên ngành và bảng biểu có thể sai, hãy đối chiếu với bản gốc ngay bên cạnh. PDF scan (ảnh chụp) chưa nhận dạng chữ.</p></details>
+  <details><summary>Bản quyền</summary><p>Chỉ dịch và chia sẻ tài liệu bạn có quyền sử dụng. Trang này không lưu hay phân phối sách. SinoBridge là mã nguồn mở MIT.</p></details>
+</section>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>

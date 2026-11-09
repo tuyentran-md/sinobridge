@@ -22,3 +22,8 @@ build/
 # Static demo site
 /web/node_modules/
 /web/dist/
+
+# Design-tool scratch (screenshots, decision rounds)
+/.impeccable/review/
+/.impeccable/questions/
+/.impeccable/mocks/

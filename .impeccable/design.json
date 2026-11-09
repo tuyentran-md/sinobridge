@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T14:50:00+07:00",
+  "title": "Design System: SinoBridge",
+  "extensions": {
+    "colorMeta": {
+      "cinnabar": { "role": "primary", "displayName": "Cinnabar (son)", "tonalRamp": ["#7d2619", "#c8402c", "#dc5640"] },
+      "gold": { "role": "secondary", "displayName": "Polished gold", "tonalRamp": ["#8a6a33", "#d9a94e", "#f0c46c"] },
+      "lac-2": { "role": "neutral", "displayName": "Lacquer", "tonalRamp": ["#140c0a", "#1b1210", "#22170f", "#2e1f19", "#3a2820"] },
+      "egg": { "role": "neutral", "displayName": "Eggshell", "tonalRamp": ["#9f8b76", "#cbb9a0", "#f1e7d6"] }
+    },
+    "typographyMeta": {
+      "source-zh": { "displayName": "Chinese source", "purpose": "Chinese passages in the reader." },
+      "translation": { "displayName": "Translation", "purpose": "Translated passages in the reader." },
+      "section-label": { "displayName": "Label", "purpose": "Rail section and reader column labels." }
+    },
+    "shadows": [
+      { "name": "primary-glow", "value": "0 1px 0 #ffffff26 inset, 0 6px 18px -8px #c8402c99", "purpose": "Primary action only." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(.16,1,.3,1)", "purpose": "State changes and the polish reveal." },
+      { "name": "polish-reveal", "value": "clip-path reveal 0.9s + gold sheen 1.1s", "purpose": "A passage's translation landing." },
+      { "name": "breathe", "value": "opacity 1.2s ease-in-out infinite", "purpose": "Passages being translated." }
+    ],
+    "breakpoints": [ { "name": "stack", "value": "900px" } ]
+  },
+  "components": [
+    {
+      "name": "Primary Button", "kind": "button", "refersTo": "button-primary",
+      "description": "Start or resume translation.",
+      "html": "<button class=\"ds-primary\">Bắt đầu dịch</button>",
+      "css": ".ds-primary{background:#c8402c;color:#fff8ee;border:0;border-radius:8px;padding:12px 16px;font:550 15px 'Be Vietnam Pro',sans-serif;box-shadow:0 1px 0 #ffffff26 inset,0 6px 18px -8px #c8402c99}.ds-primary:hover{background:#dc5640}"
+    },
+    {
+      "name": "Inlay Progress", "kind": "custom", "refersTo": "inlay-tile",
+      "description": "One tile per passage: pending, translating, done.",
+      "html": "<div class=\"ds-inlay\"><i class=\"d\"></i><i class=\"d\"></i><i class=\"w\"></i><i></i><i></i></div>",
+      "css": ".ds-inlay{display:flex;gap:2px;background:#1b1210;padding:8px}.ds-inlay i{width:8px;height:8px;border-radius:1.5px;background:#3a2820}.ds-inlay i.d{background:#d9a94e}.ds-inlay i.w{background:#c8402c}"
+    },
+    {
+      "name": "Reader Row", "kind": "custom",
+      "description": "Source, spine mark and translation side by side.",
+      "html": "<div class=\"ds-row\"><div class=\"zh\">成都以美食闻名。</div><div class=\"sp\"></div><div class=\"tr\">Thành Đô nổi tiếng về ẩm thực.</div></div>",
+      "css": ".ds-row{display:grid;grid-template-columns:1fr 34px 1fr;background:#22170f;padding:14px 20px;color:#f1e7d6;font:15px/1.75 'Be Vietnam Pro',sans-serif}.ds-row .zh{color:#cbb9a0;font-family:'Songti SC',serif}.ds-row .sp{justify-self:center;width:2px;background:#8a6a33}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Sơn mài workbench",
+    "overview": "Translating is polishing lacquer: the Chinese source is the base coat, each finished passage is polished to reveal gold. A one-screen operate surface with standard controls; the world lends palette, type, density and the polish/inlay signature.",
+    "keyCharacteristics": ["Lacquer brown surfaces", "Cinnabar = acting now", "Gold = done", "Source always beside translation"],
+    "rules": [
+      { "name": "The two-state colour rule", "body": "Cinnabar marks the primary action and in-progress passages; gold marks finished translation. Neither is decoration.", "section": "colors" }
+    ],
+    "dos": ["Keep the Chinese source visible beside every translation."],
+    "donts": ["Don't add a paper/cream ground, eyebrow labels, glyph icons or a second accent colour."]
+  }
+}

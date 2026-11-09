@@ -225,7 +225,8 @@ class HanVietTests(unittest.TestCase):
         self.assertEqual(r["hanviet"], "Trương Tam Phong")
         self.assertEqual(readings("行", "xing2")[0][0], "hành")
         self.assertEqual(readings("重", "chong2")[0][0], "trùng")
-        self.assertIn("乐", transliterate("乐山")["ambiguous"])
+        self.assertEqual(transliterate("乐山")["hanviet"], "Lạc Sơn")      # pinyin context: le4 -> lạc
+        self.assertLess(readings("乐")[0][1], 0.75)                       # without context: flagged
         self.assertEqual(tone_key("Hoà"), tone_key("hòa"))
         self.assertEqual(tone_key("lý"), tone_key("lí"))
 
@@ -243,10 +244,10 @@ class HanVietTests(unittest.TestCase):
             {"zh": "特朗普", "vi": "Trump", "type": "person", "origin": "foreign"},
             {"zh": "乐山", "vi": "Lạc Sơn", "type": "place", "origin": "chinese"}])
         mem = terms.load(ws)
-        self.assertEqual(mem["诸葛亮"]["vi"], "Gia Cát Lượng")        # dictionary wins over the model
-        self.assertEqual(mem["特朗普"]["vi"], "Trump")                # foreign names are not Hán-Việt'd
-        self.assertEqual(mem["乐山"]["vi"], "Lạc Sơn")                # valid contextual reading kept
-        self.assertEqual(notes[0]["hanviet"], "Gia Cát Lượng")
+        self.assertEqual(mem["诸葛亮"]["render"], "Gia Cát Lượng")    # dictionary wins over the model
+        self.assertEqual(mem["特朗普"]["render"], "Trump")            # foreign names are not Hán-Việt'd
+        self.assertEqual(mem["乐山"]["render"], "Lạc Sơn")            # valid contextual reading kept
+        self.assertEqual(notes[0]["standard"], "Gia Cát Lượng")
         segs[0]["translation"], segs[1]["translation"] = "Gia Cát Lượng đến Thành Đô.", "Khổng Minh cười."
         save_segments(ws, segs)
         self.assertEqual(terms.name_hints(segs[0]["source"]).get("诸葛亮"), "Gia Cát Lượng")
@@ -256,4 +257,55 @@ class HanVietTests(unittest.TestCase):
         self.assertNotIn((segs[0]["id"], "TERM_INCONSISTENT"), codes)
         terms.set_term(ws, "诸葛亮", "Khổng Minh", "person")
         self.assertEqual(terms.load(ws)["诸葛亮"]["status"], "locked")
+        tmp.cleanup()
+
+
+class EnglishTargetTests(unittest.TestCase):
+    def test_english_names(self):
+        from sinobridge.names import english, render_name
+        self.assertEqual(english("诸葛亮", "person")["render"], "Zhuge Liang")
+        self.assertEqual(english("张明华", "person")["render"], "Zhang Minghua")
+        self.assertEqual(english("欧阳明", "person")["render"], "Ouyang Ming")
+        self.assertEqual(english("单明", "person")["render"], "Shan Ming")          # surname reading
+        self.assertEqual(english("西安", "place")["render"], "Xi'an")
+        self.assertEqual(english("四川省", "place")["render"], "Sichuan Province")
+        self.assertEqual(english("某某县", "place")["render"].split()[-1], "County")
+        self.assertEqual(render_name("诸葛亮", "person", "vi")["render"], "Gia Cát Lượng")
+
+    def test_english_workspace_end_to_end(self):
+        from sinobridge import terms
+        from sinobridge.translate import system_prompt
+        self.assertIn("Chinese-to-English", system_prompt("en"))
+        self.assertIn("Hán-Việt", system_prompt("vi"))
+        tmp = tempfile.TemporaryDirectory()
+        root = Path(tmp.name)
+        src = root / "a.md"
+        src.write_text("# 第一章\n\n诸葛亮来到成都，人口120万。\n\n诸葛亮笑了。", encoding="utf-8")
+        ws = root / "ws"
+        meta = ingest(src, ws, "book", target="en")
+        self.assertEqual(meta["target_language"], "en")
+        with self.assertRaises(RuntimeError):            # same source, other target -> new workspace
+            ingest(src, ws, "book", target="vi")
+        segs = load_segments(ws)
+        self.assertEqual(terms.name_hints(segs[1]["source"], "en"), {"诸葛亮": "Zhuge Liang", "成都": "Chengdu"})
+        terms.record(ws, segs[1]["id"], [{"zh": "诸葛亮", "render": "Zhu Geliang", "type": "person"},
+                                         {"zh": "成都", "render": "Chengdu", "type": "place"}], "en")
+        self.assertEqual(terms.load(ws)["诸葛亮"]["render"], "Zhuge Liang")
+        segs[0]["translation"] = "# Chapter 1"
+        segs[1]["translation"] = "Zhuge Liang came to Chengdu, population 1.2 million."
+        segs[2]["translation"] = "Kongming laughed."
+        save_segments(ws, segs)
+        result = audit(ws)
+        codes = [(i["segment_id"], i["code"]) for i in result["issues"]]
+        self.assertIn((segs[2]["id"], "TERM_INCONSISTENT"), codes)
+        self.assertNotIn((segs[1]["id"], "TERM_INCONSISTENT"), codes)
+        out = root / "book.epub"
+        epub(ws, out, bilingual=True)
+        with zipfile.ZipFile(out) as z:
+            self.assertIn(b'xml:lang="en"', z.read("OEBPS/ch001.xhtml"))
+            self.assertIn(b"<dc:language>en</dc:language>", z.read("OEBPS/content.opf"))
+            self.assertIn(b"Draft machine translation", z.read("OEBPS/title.xhtml"))
+        page = review_html(ws, root / "r.html").read_text(encoding="utf-8")
+        self.assertIn("Click an English passage", page)
+        self.assertIn('lang="en"', page)
         tmp.cleanup()

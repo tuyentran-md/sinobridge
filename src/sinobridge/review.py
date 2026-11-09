@@ -54,8 +54,27 @@ def approval_is_current(seg: dict) -> bool:
     appr = seg.get("approval") or {}
     return seg["status"] == "APPROVED" and appr.get("translation_hash") == text_hash(seg.get("translation"))
 
+UI = {
+    "vi": {"title": "Song ngữ: ", "draft": "BẢN NHÁP — chưa qua kiểm định", "only": "chỉ đoạn có lỗi",
+           "showzh": "hiện song song tiếng Trung", "missing": "chưa dịch", "noaudit": "chưa chạy audit",
+           "pick": "Chọn một đoạn tiếng Việt để xem đoạn nguồn tiếng Trung, lỗi kiểm định, ghi chú và lịch sử sửa.",
+           "source": "Nguồn tiếng Trung", "hover": "Rê chuột lên chữ Hán để xem âm Hán Việt.", "location": "vị trí",
+           "status": "trạng thái", "issues": "Lỗi kiểm định", "noflags": "Không có cờ tự động (không đồng nghĩa với đúng nghĩa).",
+           "terms": "Tên riêng / thuật ngữ", "locked": "đã khoá", "auto": "tự động", "model": "mô hình",
+           "notes": "Mơ hồ / ghi chú", "approval": "Duyệt", "notapproved": "chưa duyệt",
+           "stale": "KHÔNG còn hiệu lực: bản dịch đã đổi", "history": "Lịch sử sửa"},
+    "en": {"title": "Bilingual: ", "draft": "DRAFT — not quality approved", "only": "only passages with issues",
+           "showzh": "show Chinese alongside", "missing": "untranslated", "noaudit": "audit not run",
+           "pick": "Click an English passage to see its Chinese source, QA flags, notes and revision history.",
+           "source": "Chinese source", "hover": "Hover over a character to see its pinyin.", "location": "location",
+           "status": "status", "issues": "QA flags", "noflags": "No automatic flags (this does not mean the meaning is right).",
+           "terms": "Names / terms", "locked": "locked", "auto": "auto", "model": "model",
+           "notes": "Ambiguities / notes", "approval": "Approval", "notapproved": "not approved",
+           "stale": "NO LONGER VALID: translation changed", "history": "Revision history"},
+}
+
 PAGE = """<!DOCTYPE html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="__LANG__"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__TITLE__</title>
 <style>
 :root{--line:#d8d8d8;--muted:#666;--sel:#fff6d6;--hi:#b42318;--med:#b54708;--low:#475467}
@@ -78,14 +97,15 @@ code{font-size:.85em}.hv{cursor:help;border-bottom:1px dotted #bbb;position:rela
 background:#1d2939;color:#fff;font:600 .8rem/1.2 system-ui,sans-serif;padding:.25rem .45rem;border-radius:4px;z-index:5}.filters label{font-size:.85rem;margin-right:.6rem}
 @media (max-width:800px){main{grid-template-columns:1fr;height:auto}#side{border-left:0;border-top:1px solid var(--line)}}
 </style></head><body>
-<header><b>__TITLE__</b><span class="draft">BẢN NHÁP — chưa qua kiểm định</span>
+<header><b>__TITLE__</b><span class="draft">__U_draft__</span>
 <span class="tag">source SHA256 __SHA__ · audit __AUDIT__</span>
-<span class="filters"><label><input type="checkbox" id="onlyIssues"> chỉ đoạn có lỗi</label>
-<label><input type="checkbox" id="showZh"> hiện song song tiếng Trung</label></span></header>
-<main><div id="text"></div><aside id="side"><p class="tag">Chọn một đoạn tiếng Việt để xem đoạn nguồn tiếng Trung, lỗi kiểm định, ghi chú và lịch sử sửa.</p></aside></main>
+<span class="filters"><label><input type="checkbox" id="onlyIssues"> __U_only__</label>
+<label><input type="checkbox" id="showZh"> __U_showzh__</label></span></header>
+<main><div id="text"></div><aside id="side"><p class="tag">__U_pick__</p></aside></main>
 <script id="data" type="application/json">__DATA__</script>
 <script>
 const D=JSON.parse(document.getElementById('data').textContent);
+const U=D.ui;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const rank={CRITICAL:0,HIGH:1,MEDIUM:2,LOW:3};
 const zhHints=t=>[...t].map(c=>D.hints[c]?`<span class="hv" data-hv="${esc(D.hints[c])}">${esc(c)}</span>`:esc(c)).join('');
@@ -95,7 +115,7 @@ function render(){
   document.getElementById('text').innerHTML=D.segments.filter(s=>!only||worst(s)).map(s=>{
     const w=worst(s), cls=['seg',s.kind==='heading'?'h':'',s.translation?'':'missing',w?'sev-'+w:''].join(' ');
     const strip=t=>s.kind==='heading'?String(t).replace(/^\\s*#+\\s*/,''):t;
-    const body=s.translation?esc(strip(s.translation)):'[chưa dịch] '+esc(strip(s.source));
+    const body=s.translation?esc(strip(s.translation)):'['+U.missing+'] '+esc(strip(s.source));
     return `<div class="${cls}" data-id="${s.id}" id="seg-${s.id}">${body}${zh&&s.translation?`<div class="zh" style="margin-top:.3rem;font-size:.95rem">${esc(s.source)}</div>`:''}</div>`}).join('');
 }
 function show(id){
@@ -104,15 +124,15 @@ function show(id){
   const el=document.getElementById('seg-'+id); if(el) el.classList.add('sel');
   const iss=D.issues[id]||[], hist=s.history||[];
   const terms=Object.entries(D.terms).filter(([zh])=>s.source.includes(zh));
-  const appr=s.approval?`${esc(s.approval.reviewer)} · ${esc(s.approval.utc)} · ${esc(s.approval.evidence)}${s.approval_current?'':' <b style="color:var(--hi)">(KHÔNG còn hiệu lực: bản dịch đã đổi)</b>'}`:'chưa duyệt';
+  const appr=s.approval?`${esc(s.approval.reviewer)} · ${esc(s.approval.utc)} · ${esc(s.approval.evidence)}${s.approval_current?'':' <b style="color:var(--hi)">('+U.stale+')</b>'}`:U.notapproved;
   document.getElementById('side').innerHTML=`
-  <h3>Nguồn tiếng Trung</h3><div class="zh">${zhHints(s.source)}</div><p class="tag">Rê chuột lên chữ Hán để xem âm Hán Việt.</p>
-  <p class="tag">ID <code>${esc(s.id)}</code> · vị trí <code>${esc(s.location)}</code> · ${esc(s.kind)} · trạng thái <b>${esc(s.status)}</b>${s.model?` · model ${esc(s.model.provider)}/${esc(s.model.name)}`:''}</p>
-  <h3>Lỗi kiểm định (${iss.length})</h3>${iss.length?iss.map(i=>`<div class="issue ${esc(i.severity)}"><b>${esc(i.severity)}</b> ${esc(i.code)}<br>${esc(i.detail)}</div>`).join(''):'<p class="tag">Không có cờ tự động (không đồng nghĩa với đúng nghĩa).</p>'}
-  <h3>Tên riêng / thuật ngữ (${terms.length})</h3>${terms.length?terms.map(([zh,t])=>`<div class="issue ${t.status==='locked'?'':'LOW'}"><b>${esc(zh)}</b> → ${esc(t.vi||'?')} <span class="tag">${esc(t.type||'')} · ${t.status==='locked'?'đã khoá':'tự động'}${t.model_rendering?' · mô hình: '+esc(t.model_rendering):''}</span></div>`).join(''):'<p class="tag">—</p>'}
-  <h3>Mơ hồ / ghi chú</h3>${[...(s.ambiguities||[]).map(a=>'⚠ '+esc(a)),...(s.notes||[]).map(esc)].map(x=>`<div>${x}</div>`).join('')||'<p class="tag">—</p>'}
-  <h3>Duyệt</h3><p>${appr}</p>
-  <h3>Lịch sử sửa (${hist.length})</h3>${hist.slice().reverse().map(h=>`<div class="rev">${esc(h.utc)} · <b>${esc(h.reviewer)}</b>${h.severity?' · '+esc(h.severity):''}${h.issue_code?' · '+esc(h.issue_code):''}<br>${esc(h.reason)}<br><del>${esc(h.previous)}</del></div>`).join('')||'<p class="tag">—</p>'}`;
+  <h3>${U.source}</h3><div class="zh">${zhHints(s.source)}</div><p class="tag">${U.hover}</p>
+  <p class="tag">ID <code>${esc(s.id)}</code> · ${U.location} <code>${esc(s.location)}</code> · ${esc(s.kind)} · ${U.status} <b>${esc(s.status)}</b>${s.model?` · model ${esc(s.model.provider)}/${esc(s.model.name)}`:''}</p>
+  <h3>${U.issues} (${iss.length})</h3>${iss.length?iss.map(i=>`<div class="issue ${esc(i.severity)}"><b>${esc(i.severity)}</b> ${esc(i.code)}<br>${esc(i.detail)}</div>`).join(''):'<p class="tag">'+U.noflags+'</p>'}
+  <h3>${U.terms} (${terms.length})</h3>${terms.length?terms.map(([zh,t])=>`<div class="issue ${t.status==='locked'?'':'LOW'}"><b>${esc(zh)}</b> → ${esc(t.render||t.vi||'?')} <span class="tag">${esc(t.type||'')} · ${t.status==='locked'?U.locked:U.auto}${t.model_rendering?' · '+U.model+': '+esc(t.model_rendering):''}</span></div>`).join(''):'<p class="tag">—</p>'}
+  <h3>${U.notes}</h3>${[...(s.ambiguities||[]).map(a=>'⚠ '+esc(a)),...(s.notes||[]).map(esc)].map(x=>`<div>${x}</div>`).join('')||'<p class="tag">—</p>'}
+  <h3>${U.approval}</h3><p>${appr}</p>
+  <h3>${U.history} (${hist.length})</h3>${hist.slice().reverse().map(h=>`<div class="rev">${esc(h.utc)} · <b>${esc(h.reviewer)}</b>${h.severity?' · '+esc(h.severity):''}${h.issue_code?' · '+esc(h.issue_code):''}<br>${esc(h.reason)}<br><del>${esc(h.previous)}</del></div>`).join('')||'<p class="tag">—</p>'}`;
   history.replaceState(null,'','#'+id);
 }
 document.getElementById('text').addEventListener('click',e=>{const t=e.target.closest('.seg'); if(t) show(t.dataset.id)});
@@ -124,7 +144,9 @@ def review_html(workspace: Path, outfile: Path) -> Path:
     """Self-contained offline bilingual review page (no network, no server)."""
     project, segs = load_project(workspace), load_segments(workspace)
     qa_path = workspace / "qa.json"
-    issues, audited = {}, "chưa chạy audit"
+    lang = project.get("target_language", "vi") if project.get("target_language") in UI else "vi"
+    ui = UI[lang]
+    issues, audited = {}, ui["noaudit"]
     if qa_path.is_file():
         qa = json.loads(qa_path.read_text(encoding="utf-8"))
         if qa.get("source_sha256") == project["source_sha256"]:
@@ -132,12 +154,22 @@ def review_html(workspace: Path, outfile: Path) -> Path:
             for issue in qa.get("issues", []):
                 issues.setdefault(issue["segment_id"], []).append(issue)
     from . import terms as term_memory
-    from .hanviet import char_hints
+    source_text = "".join(s["source"] for s in segs)
+    if lang == "en":
+        from .names import char_readings
+        hints = {c: " / ".join(dict.fromkeys(char_readings()[c][1][:3] or [char_readings()[c][0]]))
+                 for c in set(source_text) if c in char_readings()}
+    else:
+        from .hanviet import char_hints
+        hints = char_hints(source_text)
     data = {"segments": [{**s, "approval_current": approval_is_current(s)} for s in segs], "issues": issues,
-            "terms": term_memory.load(workspace), "hints": char_hints("".join(s["source"] for s in segs))}
+            "terms": term_memory.load(workspace), "hints": hints, "ui": ui}
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
-    title = "Song ngữ: " + Path(project["source_filename"]).stem
-    page = (PAGE.replace("__TITLE__", escape(title)).replace("__SHA__", project["source_sha256"][:12])
-                .replace("__AUDIT__", escape(audited)).replace("__DATA__", payload))
+    title = ui["title"] + Path(project["source_filename"]).stem
+    page = PAGE
+    for key in ("draft", "only", "showzh", "pick"):
+        page = page.replace(f"__U_{key}__", escape(ui[key]))
+    page = (page.replace("__TITLE__", escape(title)).replace("__SHA__", project["source_sha256"][:12])
+                .replace("__AUDIT__", escape(audited)).replace("__LANG__", lang).replace("__DATA__", payload))
     save_text(outfile, page)
     return outfile

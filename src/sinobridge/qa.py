@@ -71,13 +71,35 @@ def number_candidates(token: str) -> frozenset:
                 add("".join(groups))
     return frozenset((v, pct) for v in cands)
 
+# "120万" == "1.2 million" == "1,2 triệu": scale words after a number
+MULTIPLIERS = {"万": 1e4, "萬": 1e4, "亿": 1e8, "億": 1e8, "千": 1e3, "百万": 1e6, "百萬": 1e6, "千万": 1e7, "千萬": 1e7,
+               "thousand": 1e3, "million": 1e6, "billion": 1e9, "trillion": 1e12, "k": 1e3, "m": 1e6, "bn": 1e9,
+               "nghìn": 1e3, "ngàn": 1e3, "vạn": 1e4, "triệu": 1e6, "tỷ": 1e9, "tỉ": 1e9, "nghìn tỷ": 1e12}
+MULTIPLIER = re.compile(r"\s?(" + "|".join(sorted(map(re.escape, MULTIPLIERS), key=len, reverse=True)) + r")(?![A-Za-zÀ-ỹ])",
+                        re.IGNORECASE)
+
+MONTHS = re.compile(r"\b(January|February|March|April|May|June|July|August|September|October|November|December|"
+                    r"Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b\.?")   # capitalized only: "may" is a verb
+MONTH_NUM = {m: i for i, m in enumerate(["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], 1)}
+
 def numeric_tokens(text: str) -> list[tuple[str, frozenset, bool]]:
     """(token, candidate values, soft). Chinese-numeral tokens are `soft`: they can satisfy
     a counterpart (一百二十 ~ 120) but are never reported alone, because words such as
     万一 or 一一 are not quantities."""
     text = unicodedata.normalize("NFKC", text)
-    out = [(t, number_candidates(t), False)
-           for t in (m.group(0).rstrip(".,;。；") for m in NUMBERS.finditer(text))]
+    out = []
+    for m in NUMBERS.finditer(text):
+        token = m.group(0).rstrip(".,;。；")
+        cands = number_candidates(token)
+        unit = MULTIPLIER.match(text, m.end())
+        if unit and "%" not in token:
+            factor = MULTIPLIERS[unit.group(1).lower()]
+            # keep the bare value too (a translator may write "120 vạn"); add the scaled value
+            cands = cands | frozenset((round(v * factor, 4), pct) for v, pct in cands)
+            token += unit.group(1)
+        out.append((token, cands, False))
+    for m in MONTHS.finditer(text):   # "March 2025" for 2025年3月: soft, never reported alone
+        out.append((m.group(0), frozenset({(float(MONTH_NUM[m.group(0).lower()[:3]]), False)}), True))
     for m in ZH_NUMERAL.finditer(text):
         value = zh_numeral_value(m.group(0))
         if value is not None:
@@ -100,7 +122,10 @@ def make_issue(segment: dict, code: str, severity: str, detail: str) -> dict:
     return {"segment_id": segment["id"], "location": segment["location"],
             "code": code, "severity": severity, "detail": detail, "status": "OPEN"}
 
-def check_segment(seg: dict, glossary: dict | None = None) -> list[dict]:
+CHINA_WORDS = {"vi": ("trung quốc", "đại lục", "trung hoa"),
+               "en": ("china", "chinese", "prc", "mainland", "people's republic")}
+
+def check_segment(seg: dict, glossary: dict | None = None, lang: str = "vi") -> list[dict]:
     if not seg.get("translation"):
         return [make_issue(seg, "MISSING_TRANSLATION", "HIGH", "No translated passage")]
     original, target = seg["source"], seg["translation"]
@@ -118,9 +143,9 @@ def check_segment(seg: dict, glossary: dict | None = None) -> list[dict]:
         added = capture(pattern, target) - capture(pattern, original)
         if added:
             issues.append(make_issue(seg, "ADDED_"+name, "HIGH", f"Target tokens absent in source: {dict(added)}"))
-    if any(term in original for term in CHINESE_TERMS) and not any(t in target.lower() for t in ("trung quốc", "đại lục", "trung hoa")):
+    if any(term in original for term in CHINESE_TERMS) and not any(t in target.lower() for t in CHINA_WORDS.get(lang, CHINA_WORDS["vi"])):
         issues.append(make_issue(seg, "JURISDICTION_CONTEXT", "MEDIUM",
-                                 "China-specific terms detected; manually verify jurisdiction in Vietnamese"))
+                                 "China-specific terms detected; manually verify the jurisdiction is explicit in the translation"))
     for zh, vi in (glossary or {}).items():
         if zh in original and vi.lower() not in target.lower():
             issues.append(make_issue(seg, "GLOSSARY_MISMATCH", "MEDIUM", f"{zh} -> {vi}"))
@@ -141,7 +166,7 @@ def check_terms(seg: dict, memory: dict) -> list[dict]:
         return []
     issues = []
     for zh, t in term_memory.in_text(memory, seg["source"]).items():
-        vi = t.get("vi")
+        vi = term_memory.rendering(t)
         if vi and not contains(seg["translation"], vi):
             locked = t.get("status") == "locked"
             issues.append(make_issue(seg, "TERM_INCONSISTENT", "HIGH" if locked else "MEDIUM",
@@ -157,7 +182,8 @@ def audit(workspace: Path, glossary_path: Path | None = None) -> dict:
         import json
         glossary = json.loads(glossary_path.read_text(encoding="utf-8"))
     memory = term_memory.load(workspace)
-    issues = [issue for s in segs for issue in check_segment(s, glossary) + check_terms(s, memory)]
+    target = proj.get("target_language", "vi")
+    issues = [issue for s in segs for issue in check_segment(s, glossary, target) + check_terms(s, memory)]
     missing = sum(not s.get("translation") for s in segs)
     critical_high = sum(issue["severity"] in ("CRITICAL", "HIGH") for issue in issues)
     reviewed = sum(approval_is_current(s) for s in segs)

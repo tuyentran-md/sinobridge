@@ -1,15 +1,15 @@
 # SinoBridge
 
-**Đọc, dịch và tra cứu tài liệu tiếng Trung sang tiếng Việt — mọi câu dịch đều truy được về đúng đoạn gốc.**
+**Đọc, dịch và tra cứu tài liệu tiếng Trung sang tiếng Việt hoặc tiếng Anh — mọi câu dịch đều truy được về đúng đoạn gốc.**
 
-*Source-traceable Chinese → Vietnamese reading, translation and research toolkit. English summary below.*
+**Tiếng Việt** · [English](README.en.md)
 
 SinoBridge là công cụ mã nguồn mở (MIT) gồm ba phần dùng chung một nền:
 
 | Phần | Làm gì |
 |---|---|
 | **Nguồn** (connectors) | Lấy tài liệu tiếng Trung từ file (TXT, Markdown, DOCX, EPUB, PDF), trang web công khai (bài WeChat, Zhihu, báo, blog, Wikipedia), trang lưu từ trình duyệt, phụ đề video (Bilibili/Douyin: .srt/.vtt), trích dẫn xuất từ CNKI/Wanfang/VIP/SinoMed. Có cơ chế plugin để cộng đồng viết thêm nguồn. |
-| **Dịch & kiểm định** | Dịch theo đoạn có ngữ cảnh, bằng mô hình bạn chọn (GPT, Gemini, DeepSeek, Qwen...). **Phiên âm Hán Việt tên riêng và thuật ngữ**, bộ nhớ thuật ngữ thống nhất toàn sách. Tự động kiểm số liệu, DOI, trích dẫn, thuật ngữ, ngữ cảnh pháp lý Trung Quốc; sửa có lịch sử; duyệt gắn với đúng câu đã duyệt. |
+| **Dịch & kiểm định** | Dịch theo đoạn có ngữ cảnh sang **tiếng Việt hoặc tiếng Anh**, bằng mô hình bạn chọn (GPT, Gemini, DeepSeek, Qwen...). **Phiên âm Hán Việt tên riêng và thuật ngữ**, bộ nhớ thuật ngữ thống nhất toàn sách. Tự động kiểm số liệu, DOI, trích dẫn, thuật ngữ, ngữ cảnh pháp lý Trung Quốc; sửa có lịch sử; duyệt gắn với đúng câu đã duyệt. |
 | **Xuất bản sạch** | EPUB3 chia chương có mục lục, DOCX, Markdown, phụ đề .srt/.vtt tiếng Việt, và trang đọc song ngữ offline: bấm một câu tiếng Việt → thấy câu tiếng Trung, lỗi, ghi chú, lịch sử sửa. |
 
 ![Trang đọc song ngữ: bấm một câu tiếng Việt để xem câu tiếng Trung gốc, lỗi kiểm định, tên riêng và âm Hán Việt](docs/images/review-page.png)
@@ -23,7 +23,7 @@ chữ 北 sẽ hiện âm Hán Việt "bắc".*
 ```mermaid
 flowchart LR
     A["📄 Nguồn tiếng Trung<br/>file · trang web · phụ đề<br/>trích dẫn CNKI/Wanfang"] --> B["Tách đoạn<br/>mỗi đoạn có mã + vị trí gốc"]
-    B --> C["Dịch từng đoạn<br/>GPT · Gemini · DeepSeek...<br/>+ gợi ý tên Hán Việt"]
+    B --> C["Dịch từng đoạn<br/>→ tiếng Việt hoặc tiếng Anh<br/>+ gợi ý tên riêng"]
     C --> D["Kiểm định tự động<br/>số liệu · DOI · trích dẫn<br/>tên riêng/thuật ngữ thống nhất"]
     D --> E["Người đọc soát<br/>sửa có lịch sử · duyệt"]
     E --> F["📚 Xuất bản<br/>EPUB · DOCX · Markdown<br/>phụ đề .srt · trang song ngữ"]
@@ -45,10 +45,13 @@ Python 3.10+.
 
 ## Dùng nhanh
 
+Chọn ngôn ngữ đích khi nạp tài liệu: `--target vi` (mặc định) hoặc `--target en`.
+
     sinobridge sources                                    # xem các nguồn hỗ trợ
     sinobridge ingest sach.epub --workspace work/sach --kind book
     sinobridge ingest "https://zh.wikipedia.org/wiki/汉越词" --workspace work/wiki --kind article
     sinobridge ingest video.zh.srt --workspace work/video --kind subtitle
+    sinobridge ingest paper.pdf --workspace work/paper-en --kind paper --target en   # dịch sang tiếng Anh
 
 Dịch (mặc định 1 đoạn để thử; `--max-segments 0` = tất cả). Văn bản chỉ được gửi tới dịch vụ khi bạn bật
 `--allow-external` sau khi đã kiểm tra quyền và tính riêng tư của tài liệu:
@@ -64,11 +67,15 @@ server tương thích OpenAI (`--provider openai-compatible --base-url ...`). Xe
 ## Tên riêng và thuật ngữ: phiên âm Hán Việt
 
     sinobridge hanviet 诸葛亮 四川省 乐山
-    # Gia Cát Lượng · tỉnh Tứ Xuyên · Nhạc Sơn (gắn cờ: 乐 có thể đọc Lạc/Nhạc)
+    # Gia Cát Lượng · tỉnh Tứ Xuyên · Lạc Sơn (乐 đa âm: chọn "lạc" nhờ pinyin lè của địa danh)
+    sinobridge name 诸葛亮 张明华 --to en
+    # Zhuge Liang · Zhang Minghua (dịch sang tiếng Anh: pinyin chuẩn hoặc tên tiếng Anh quen dùng)
 
 - Tra từ điển tên và từ Hán Việt kèm sẵn trước (khoảng 11.600 mục từ Wiktionary và CVDICT), sau đó mới ghép âm
   từng chữ theo tần suất thực tế. Pinyin dùng để phân biệt chữ đa âm (行 xing → hành, hang → hàng).
-- Độ chính xác đo trên tên không dùng để dựng dữ liệu: 88% đúng nguyên tên, 95% đúng từng âm. Chữ đa âm và chữ chưa
+- Dịch sang tiếng Anh: dùng tên tiếng Anh quen dùng nếu có (khoảng 17.000 tên riêng từ CC-CEDICT: Confucius, Tibet,
+  Hong Kong); nếu không thì theo quy tắc pinyin (họ trước, tên viết liền: Zhang Minghua; địa danh: Xi'an, Sichuan Province).
+- Độ chính xác (Hán Việt) đo trên tên không dùng để dựng dữ liệu: 88% đúng nguyên tên, 95% đúng từng âm. Chữ đa âm và chữ chưa
   biết âm luôn được gắn cờ để người kiểm tra.
 - Khi dịch, mô hình được gợi ý sẵn các tên đã biết và phải liệt kê tên riêng và thuật ngữ nó gặp. Tên gốc Trung Quốc
   được chuẩn hoá về Hán Việt; tên nước ngoài phiên âm bằng chữ Hán (特朗普) giữ dạng quen dùng (Trump).
@@ -108,6 +115,7 @@ Xuất bản:
 
 Sản phẩm không có dấu "nháp" trên từng trang; trạng thái duyệt được ghi **một lần, trung thực** ở trang bản quyền
 (ví dụ "Bản dịch nháp: 120/300 đoạn đã được người duyệt"). Mỗi đoạn vẫn có mã neo ẩn trỏ về đoạn gốc.
+Với `--target en`, trang bản quyền, mục lục và trang đọc song ngữ dùng tiếng Anh.
 
 <br clear="right">
 
@@ -134,6 +142,7 @@ Sản phẩm không có dấu "nháp" trên từng trang; trạng thái duyệt 
 - **Quyền và riêng tư**: chỉ gửi văn bản ra API khi bạn bật `--allow-external`; không vượt paywall, không cào hàng loạt,
   tôn trọng robots.txt. Bản dịch không xoá bản quyền của tác giả gốc.
 - Không dùng bản dịch tài liệu y khoa để kết luận lâm sàng khi chưa đọc nguồn gốc.
+- So số theo giá trị: 1.25 = 1,25; 120万 = 1,2 triệu = 1.2 million; 2025年3月 = March 2025; 一百二十 = 120.
 
 ## Viết thêm nguồn (plugin)
 
@@ -144,15 +153,9 @@ bản quyền của một trường, trình đọc file xuất Weibo, RSS. Xem [
 
 Xem [ROADMAP.md](ROADMAP.md). Đóng góp: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## English summary
+## English
 
-SinoBridge ingests Chinese material (files, public web pages, saved pages, subtitles, CNKI/Wanfang citation
-exports, plugin connectors), translates it to Vietnamese segment-by-segment with your chosen model (remote APIs only behind an
-explicit `--allow-external`), renders Chinese names and terms in Hán-Việt (bundled
-lexicon + evidence-ranked character readings, 88% exact on held-out names) with a per-project term memory, runs
-deterministic QA (numbers by value across locales, DOI, citations, glossary, term consistency, jurisdiction), keeps an append-only revision history and hash-bound approvals, and exports clean
-EPUB3/DOCX/Markdown/SRT plus an offline bilingual review page. Every output passage links back to its exact source
-passage.
+Full English documentation: [README.en.md](README.en.md).
 
 ## Ghi công
 
@@ -161,8 +164,8 @@ Cảm hứng quy trình (trung thành, tự nhiên, kiểm định nhiều cổn
 và [thuongtin/HowToLiveBetter](https://github.com/thuongtin/HowToLiveBetter) (CC BY 4.0). Mã nguồn được viết độc lập,
 giấy phép MIT.
 
-Dữ liệu Hán Việt kèm theo (`src/sinobridge/data/`) dựng từ Wiktionary (qua kaikki.org), CVDICT của Phong Phan
-(dựa trên CC-CEDICT) và Unicode Unihan; phát hành theo **CC BY-SA 4.0**, xem
+Dữ liệu ngôn ngữ kèm theo (`src/sinobridge/data/`) dựng từ Wiktionary (qua kaikki.org), CVDICT của Phong Phan,
+CC-CEDICT (MDBG) và Unicode Unihan; phát hành theo **CC BY-SA 4.0** (file dựng từ Unihan theo Unicode License), xem
 [src/sinobridge/data/README.md](src/sinobridge/data/README.md).
 
 Ảnh minh hoạ dùng bài viết hư cấu trong `examples/demo_article_zh.md`, tạo lại bằng

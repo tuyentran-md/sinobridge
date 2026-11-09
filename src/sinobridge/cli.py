@@ -30,6 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--workspace", required=True, type=Path)
     i.add_argument("--kind", default="book", choices=["book", "paper", "article", "subtitle"])
     i.add_argument("--connector", help="Force a specific document connector (see 'sinobridge sources')")
+    i.add_argument("--target", default="vi", choices=["vi", "en"], help="Target language: vi (Vietnamese) or en (English)")
 
     t = sub.add_parser("translate", help="Model translation (external services need --allow-external)")
     t.add_argument("--workspace", required=True, type=Path)
@@ -75,6 +76,11 @@ def build_parser() -> argparse.ArgumentParser:
     for sp in (li, ll, lk, lx):
         sp.add_argument("--library", type=Path, default=Path("library"))
 
+    nm = sub.add_parser("name", help="Render Chinese names: --to vi (Hán-Việt) or --to en (pinyin / English form)")
+    nm.add_argument("text", nargs="+")
+    nm.add_argument("--to", default="vi", choices=["vi", "en"])
+    nm.add_argument("--type", default="person", choices=["person", "place", "other"])
+
     h = sub.add_parser("hanviet", help="Hán-Việt for Chinese names/terms (诸葛亮 -> Gia Cát Lượng)")
     h.add_argument("text", nargs="+")
     h.add_argument("--lower", action="store_true", help="Do not capitalize (terms rather than names)")
@@ -85,7 +91,7 @@ def build_parser() -> argparse.ArgumentParser:
     tl.add_argument("--status", choices=["auto", "locked"])
     tset = tms.add_parser("set", help="Lock a rendering (enforced in translation and audit)")
     tset.add_argument("zh")
-    tset.add_argument("vi")
+    tset.add_argument("render", help="Agreed rendering in the workspace's target language")
     tset.add_argument("--type", default="term", choices=["person", "place", "org", "dynasty", "work", "era", "term"])
     tset.add_argument("--note")
     trm = tms.add_parser("remove")
@@ -122,7 +128,7 @@ def run(args) -> object:
         return [{"name": k.name, "kind": k.kind, "access": k.access, "description": k.description,
                  "origin": k.origin, **({"notes": k.notes} if k.notes else {})} for k in registry().values()]
     if c == "ingest":
-        return ingest(args.source, args.workspace, args.kind, args.connector)
+        return ingest(args.source, args.workspace, args.kind, args.connector, args.target)
     if c == "translate":
         return translate(args.workspace, args.provider, args.model, allow_external=args.allow_external,
                          dry_run=args.dry_run, limit=args.max_segments, glossary_path=args.glossary,
@@ -133,7 +139,8 @@ def run(args) -> object:
         if args.format == "html":
             return {"file": str(review_html(args.workspace, args.out).resolve()), "kind": "review page"}
         out = EXPORTS[args.format](args.workspace, args.out, args.bilingual, args.trace)
-        summary = exporters.review_summary(load_segments(args.workspace))
+        summary = exporters.review_summary(load_segments(args.workspace),
+                                           exporters.lang_of(load_project(args.workspace)))
         return {"file": str(out.resolve()), "review": summary["status_line"]}
     if c == "search":
         result = search(args.query, args.source, args.language, args.limit)
@@ -157,6 +164,10 @@ def run(args) -> object:
             records = lib.find(args.library, args.query)
             save_text(args.out, lib.to_ris(records))
             return {"file": str(args.out.resolve()), "records": len(records)}
+    if c == "name":
+        from .names import render_name
+        out = [render_name(t, args.type, args.to) for t in args.text]
+        return out[0] if len(out) == 1 else out
     if c == "hanviet":
         results = [hanviet.transliterate(t, capitalize=not args.lower) for t in args.text]
         for r in results:
@@ -169,14 +180,15 @@ def run(args) -> object:
             return {zh: t for zh, t in term_memory.load(args.workspace).items()
                     if not args.status or t.get("status") == args.status}
         if args.action == "set":
-            return term_memory.set_term(args.workspace, args.zh, args.vi, args.type, args.note)
+            return term_memory.set_term(args.workspace, args.zh, args.render, args.type, args.note)
         if args.action == "remove":
             return term_memory.remove_term(args.workspace, args.zh)
         if args.action == "scan":
             found = {}
+            target = load_project(args.workspace).get("target_language", "vi")
             for seg in load_segments(args.workspace):
-                for zh, vi in term_memory.name_hints(seg["source"]).items():
-                    found.setdefault(zh, {"hanviet": vi, "first_segment": seg["id"], "count": 0})["count"] += 1
+                for zh, r in term_memory.name_hints(seg["source"], target).items():
+                    found.setdefault(zh, {"render": r, "first_segment": seg["id"], "count": 0})["count"] += 1
             return dict(sorted(found.items(), key=lambda kv: -kv[1]["count"]))
     if c == "data":
         if args.action == "fetch":
@@ -190,7 +202,8 @@ def run(args) -> object:
         return {"source": meta["source_filename"], "source_sha256": meta["source_sha256"],
                 "connector": (meta.get("provenance") or {}).get("connector"), "segments": len(segs),
                 "pending": count("PENDING"), "draft": count("DRAFT"), "revised": count("REVISED"),
-                "approved": count("APPROVED"), "review": exporters.review_summary(segs)["status_line"],
+                "approved": count("APPROVED"), "target_language": meta.get("target_language", "vi"),
+                "review": exporters.review_summary(segs, exporters.lang_of(meta))["status_line"],
                 "rights_status": meta["rights_status"], "warnings": meta.get("extraction_warnings", [])}
     if c == "approve":
         return approve(args.workspace, args.segment, args.reviewer, args.evidence)

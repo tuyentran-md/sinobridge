@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sinobridge"
 version = "0.2.0"
-description = "Source-traceable Chinese-to-Vietnamese reading, translation and research toolkit"
+description = "Source-traceable Chinese to English/Vietnamese reading, translation and research toolkit"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

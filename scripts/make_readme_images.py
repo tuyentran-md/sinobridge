@@ -17,18 +17,19 @@ from sinobridge.qa import audit  # noqa: E402
 
 OUT = ROOT / "docs" / "images"
 
-def build_demo(tmp: Path) -> Path:
-    ws = tmp / "ws"
-    ingest(ROOT / "examples" / "demo_article_zh.md", ws, "article")
-    demo = json.loads((ROOT / "examples" / "demo_article_vi.json").read_text(encoding="utf-8"))
+def build_demo(tmp: Path, target: str = "vi") -> Path:
+    ws = tmp / f"ws-{target}"
+    ingest(ROOT / "examples" / "demo_article_zh.md", ws, "article", target=target)
+    demo = json.loads((ROOT / "examples" / f"demo_article_{target}.json").read_text(encoding="utf-8"))
     segs = load_segments(ws)
     for seg, vi in zip(segs, demo["translations"]):
         seg.update(translation=vi, status="DRAFT", model={"provider": "demo", "name": "hand-written"})
     segs[-1]["translation"] = demo["first_draft_of_last"]
     save_segments(ws, segs)
-    terms.record(ws, segs[1]["id"], demo["entities"])
-    review.revise(ws, segs[-1]["id"], demo["translations"][-1], "Lan", "因果关系 = quan hệ nhân quả", "MEDIUM", "G1")
-    review.approve(ws, segs[1]["id"], "Lan", "Đối chiếu bản gốc")
+    terms.record(ws, segs[1]["id"], demo["entities"], target)
+    reason = "因果关系 = quan hệ nhân quả" if target == "vi" else "因果关系 = causal relationship"
+    review.revise(ws, segs[-1]["id"], demo["translations"][-1], "Lan", reason, "MEDIUM", "G1")
+    review.approve(ws, segs[1]["id"], "Lan", "Đối chiếu bản gốc" if target == "vi" else "Checked against source")
     audit(ws)
     return ws
 
@@ -51,6 +52,17 @@ def terminal_html() -> str:
     lines.append('<span class="m"># tên nước ngoài viết bằng chữ Hán (特朗普) không phiên Hán Việt khi dịch: giữ “Trump”</span>')
     return TERMINAL.replace("__BODY__", '<span class="p">$</span> sinobridge hanviet 诸葛亮 毛泽东 四川省 重庆 张明华 乐山<br>' + "<br>".join(lines))
 
+def terminal_en_html() -> str:
+    from sinobridge.names import english
+    lines = []
+    for zh, kind in [("诸葛亮", "person"), ("孔子", "person"), ("张明华", "person"), ("欧阳明", "person"),
+                     ("西安", "place"), ("四川省", "place"), ("长江", "place")]:
+        r = english(zh, kind)
+        src = '<span class="m">dictionary</span>' if r["exact"] else '<span class="m">pinyin rules</span>'
+        lines.append(f'<span class="b">{zh}</span>  →  <span class="c">{r["render"]}</span>  {src}')
+    cmd = '<span class="p">$</span> sinobridge name 诸葛亮 孔子 张明华 欧阳明 --to en   <span class="m"># + places with --type place</span><br>'
+    return TERMINAL.replace("__BODY__", cmd + "<br>".join(lines))
+
 def main():
     from playwright.sync_api import sync_playwright
     OUT.mkdir(parents=True, exist_ok=True)
@@ -63,12 +75,22 @@ def main():
             z.extractall(tmp / "epub")
         (tmp / "term.html").write_text(terminal_html(), encoding="utf-8")
         segs = load_segments(ws)
+        ws_en = build_demo(tmp, "en")
+        page_en = review.review_html(ws_en, tmp / "review-en.html")
+        (tmp / "term-en.html").write_text(terminal_en_html(), encoding="utf-8")
         with sync_playwright() as p:
             browser = p.chromium.launch()
             pg = browser.new_page(viewport={"width": 1280, "height": 760}, device_scale_factor=2)
             pg.goto(page_file.as_uri() + "#" + segs[3]["id"])
             pg.hover("#side .zh .hv >> text=北")
             pg.screenshot(path=str(OUT / "review-page.png"))
+            pg = browser.new_page(viewport={"width": 1280, "height": 760}, device_scale_factor=2)
+            pg.goto(page_en.as_uri() + "#" + segs[3]["id"])
+            pg.hover("#side .zh .hv >> text=北")
+            pg.screenshot(path=str(OUT / "review-page-en.png"))
+            pg = browser.new_page(viewport={"width": 900, "height": 300}, device_scale_factor=2)
+            pg.goto((tmp / "term-en.html").as_uri())
+            pg.screenshot(path=str(OUT / "names-en-cli.png"), full_page=True)
             pg = browser.new_page(viewport={"width": 460, "height": 820}, device_scale_factor=2)
             pg.goto((tmp / "epub" / "OEBPS" / "ch001.xhtml").as_uri())
             pg.screenshot(path=str(OUT / "epub-bilingual.png"))

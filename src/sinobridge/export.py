@@ -27,35 +27,60 @@ p { margin: 0 0 .8em; text-indent: 0; orphans: 2; widows: 2; }
 .titlepage { text-align: center; margin-top: 20%; }
 .titlepage .sub { color: #666; font-size: .95em; }"""
 
+T = {
+    "vi": {"all_approved": "Toàn bộ {total} đoạn đã được người duyệt ({reviewers}) đối chiếu với bản gốc.",
+           "some_approved": "Bản dịch nháp: {approved}/{total} đoạn đã được người duyệt; phần còn lại chưa được kiểm tra.",
+           "none_approved": "Bản dịch nháp (dịch máy), chưa được người duyệt đối chiếu với bản gốc.",
+           "untranslated": " Còn {n} đoạn chưa dịch (giữ nguyên tiếng Trung).",
+           "source": "Nguồn", "sha": "SHA-256 nguồn", "models": "Mô hình dịch",
+           "rights": "Bản quyền nội dung thuộc tác giả gốc; bản dịch dùng cho mục đích được phép.",
+           "made": "Tạo bằng SinoBridge, {date}.", "subtitle": "Bản dịch tiếng Việt", "toc": "Mục lục",
+           "missing": "chưa dịch"},
+    "en": {"all_approved": "All {total} passages were reviewed against the original by {reviewers}.",
+           "some_approved": "Draft translation: {approved}/{total} passages human-reviewed; the rest are unchecked.",
+           "none_approved": "Draft machine translation, not yet reviewed against the original.",
+           "untranslated": " {n} passages are untranslated (Chinese kept).",
+           "source": "Source", "sha": "Source SHA-256", "models": "Translation models",
+           "rights": "Content copyright belongs to the original author; use this translation only as permitted.",
+           "made": "Made with SinoBridge, {date}.", "subtitle": "English translation", "toc": "Contents",
+           "missing": "untranslated"},
+}
+
+def lang_of(project: dict) -> str:
+    return project.get("target_language", "vi") if project.get("target_language") in T else "vi"
+
 def strip_heading(text: str) -> str:
     return re.sub(r"^\s{0,3}#{1,6}\s+", "", text or "").strip()
 
-def review_summary(segs: list[dict]) -> dict:
+def review_summary(segs: list[dict], lang: str = "vi") -> dict:
     total = len(segs)
     translated = sum(bool(s.get("translation")) for s in segs)
     approved = [s for s in segs if approval_is_current(s)]
     reviewers = sorted({s["approval"]["reviewer"] for s in approved})
     models = sorted({f"{s['model']['provider']}/{s['model']['name']}" for s in segs if s.get("model")})
+    L = T.get(lang, T["vi"])
     if total and len(approved) == total:
-        line = f"Toàn bộ {total} đoạn đã được người duyệt ({', '.join(reviewers)}) đối chiếu với bản gốc."
+        line = L["all_approved"].format(total=total, reviewers=", ".join(reviewers))
     elif approved:
-        line = f"Bản dịch nháp: {len(approved)}/{total} đoạn đã được người duyệt; phần còn lại chưa được kiểm tra."
+        line = L["some_approved"].format(approved=len(approved), total=total)
     else:
-        line = "Bản dịch nháp (dịch máy), chưa được người duyệt đối chiếu với bản gốc."
+        line = L["none_approved"]
     if translated < total:
-        line += f" Còn {total - translated} đoạn chưa dịch (giữ nguyên tiếng Trung)."
+        line += L["untranslated"].format(n=total - translated)
     return {"total": total, "translated": translated, "approved": len(approved), "reviewers": reviewers,
             "models": models, "status_line": line, "fully_approved": bool(total) and len(approved) == total}
 
 def colophon_lines(project: dict, segs: list[dict]) -> list[str]:
-    summary = review_summary(segs)
+    lang = lang_of(project)
+    L = T[lang]
+    summary = review_summary(segs, lang)
     prov = project.get("provenance") or {}
     origin = prov.get("url") or project["source_filename"]
-    lines = [summary["status_line"], f"Nguồn: {origin}", f"SHA-256 nguồn: {project['source_sha256']}"]
+    lines = [summary["status_line"], f"{L['source']}: {origin}", f"{L['sha']}: {project['source_sha256']}"]
     if summary["models"]:
-        lines.append("Mô hình dịch: " + ", ".join(summary["models"]))
-    lines.append("Bản quyền nội dung thuộc tác giả gốc; bản dịch dùng cho mục đích được phép.")
-    lines.append(f"Tạo bằng SinoBridge, {datetime.now(timezone.utc):%Y-%m-%d}.")
+        lines.append(f"{L['models']}: " + ", ".join(summary["models"]))
+    lines.append(L["rights"])
+    lines.append(L["made"].format(date=f"{datetime.now(timezone.utc):%Y-%m-%d}"))
     return lines
 
 def book_title(project: dict, segs: list[dict]) -> str:
@@ -87,7 +112,7 @@ def markdown(workspace: Path, outfile: Path, bilingual=False, trace=False):
             if bilingual and vi:
                 parts.append(f"<small lang=\"zh\">{zh}</small>")
         else:
-            parts.append(vi if vi else f"*[chưa dịch]* {zh}")
+            parts.append(vi if vi else f"*[{T[lang_of(project)]['missing']}]* {zh}")
             if bilingual and vi:
                 parts += [""] + ["> " + line for line in zh.split("\n")]
         parts.append("")
@@ -129,7 +154,7 @@ def docx(workspace: Path, outfile: Path, bilingual=False, trace=False):
                 if bilingual:
                     zh_para(zh)
             else:
-                zh_para("[chưa dịch] " + zh)
+                zh_para(f"[{T[lang_of(project)]['missing']}] " + zh)
     outfile.parent.mkdir(parents=True, exist_ok=True)
     doc.save(outfile)
     return outfile
@@ -139,10 +164,10 @@ def _p(text: str, cls: str | None = None, lang: str | None = None, ident: str | 
     attrs = "".join(f' {k}="{v}"' for k, v in (("id", ident), ("class", cls), ("xml:lang", lang), ("lang", lang)) if v)
     return f"<p{attrs}>" + "<br/>".join(escape(line) for line in text.split("\n")) + "</p>"
 
-def _xhtml(title: str, body: str) -> str:
+def _xhtml(title: str, body: str, lang: str = "vi") -> str:
     return f"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="vi" lang="vi">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="{lang}" lang="{lang}">
 <head><meta charset="utf-8"/><title>{escape(title)}</title><link rel="stylesheet" type="text/css" href="style.css"/></head>
 <body>
 {body}
@@ -150,6 +175,8 @@ def _xhtml(title: str, body: str) -> str:
 
 def epub(workspace: Path, outfile: Path, bilingual=False, trace=False):
     project, segs = load_project(workspace), load_segments(workspace)
+    lang = lang_of(project)
+    L = T[lang]
     title = book_title(project, segs)
     chapters: list[tuple[str, list[str]]] = []
     current_title, current = None, []
@@ -171,26 +198,26 @@ def epub(workspace: Path, outfile: Path, bilingual=False, trace=False):
         chapters.append((current_title or title, current))
     colophon = "".join(_p(line) for line in colophon_lines(project, segs))
     titlepage = (f'<section class="titlepage" epub:type="titlepage"><h1>{escape(title)}</h1>'
-                 f'<p class="sub">Bản dịch tiếng Việt</p></section>'
+                 f'<p class="sub">{L["subtitle"]}</p></section>'
                  f'<section class="colophon" epub:type="colophon">{colophon}</section>')
-    files = {"title.xhtml": _xhtml(title, titlepage)}
+    files = {"title.xhtml": _xhtml(title, titlepage, lang)}
     toc = []
     for n, (ch_title, body) in enumerate(chapters, 1):
         name = f"ch{n:03d}.xhtml"
-        files[name] = _xhtml(ch_title, "\n".join(body))
+        files[name] = _xhtml(ch_title, "\n".join(body), lang)
         toc.append(f'<li><a href="{name}">{escape(ch_title)}</a></li>')
-    nav = _xhtml("Mục lục", f'<nav epub:type="toc" id="toc"><h1>Mục lục</h1><ol>{"".join(toc)}</ol></nav>')
+    nav = _xhtml(L["toc"], f'<nav epub:type="toc" id="toc"><h1>{L["toc"]}</h1><ol>{"".join(toc)}</ol></nav>', lang)
     modified = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     book_id = uuid.uuid5(uuid.NAMESPACE_URL, "sinobridge:" + project["source_sha256"])
     manifest = "\n".join(f'<item id="{Path(n).stem}" href="{n}" media-type="application/xhtml+xml"/>' for n in files)
     spine = "\n".join(f'<itemref idref="{Path(n).stem}"/>' for n in files)
     opf = f"""<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid" xml:lang="vi">
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid" xml:lang="{lang}">
 <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
 <dc:identifier id="bookid">urn:uuid:{book_id}</dc:identifier>
-<dc:title>{escape(title)}</dc:title><dc:language>vi</dc:language>
+<dc:title>{escape(title)}</dc:title><dc:language>{lang}</dc:language>
 <dc:source>{escape((project.get('provenance') or {}).get('url') or project['source_filename'])}</dc:source>
-<dc:description>{escape(review_summary(segs)['status_line'])}</dc:description>
+<dc:description>{escape(review_summary(segs, lang)['status_line'])}</dc:description>
 <meta property="dcterms:modified">{modified}</meta>
 </metadata>
 <manifest>

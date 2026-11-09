@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic demo for README screenshots (English target). Paragraph 2 has a deliberate number error (4.8 -> 8.4) and paragraph 3 a deliberate name inconsistency (Zhang Ming-hua), so the QA flags are visible.",
+  "translations": [
+    "# Chengdu Children's Hospital introduces a new minimally invasive procedure (fictional example)",
+    "In March 2025, the surgical team of Chengdu Children's Hospital in Chengdu, Sichuan Province, completed its 100th laparoscopic operation.",
+    "Team leader Professor Zhang Minghua said the postoperative complication rate fell from 12.5% to 8.4%, and the average hospital stay was shortened to 3.2 days.",
+    "Zhang Ming-hua explained that the technique was first introduced in Beijing in 2019 and has since spread to Chongqing, Xi'an and other cities.",
+    "Experts caution that these data come from a single-centre observational series and cannot establish a causal relationship."
+  ],
+  "first_draft_of_last": "Experts caution that these data come from a single-centre observational series and cannot prove a link.",
+  "entities": [
+    {"zh": "张明华", "render": "Zhang Minghua", "type": "person", "origin": "chinese"},
+    {"zh": "成都", "render": "Chengdu", "type": "place", "origin": "chinese"},
+    {"zh": "四川省", "render": "Sichuan Province", "type": "place", "origin": "chinese"},
+    {"zh": "北京", "render": "Beijing", "type": "place", "origin": "chinese"},
+    {"zh": "重庆", "render": "Chongqing", "type": "place", "origin": "chinese"},
+    {"zh": "西安", "render": "Xi'an", "type": "place", "origin": "chinese"},
+    {"zh": "腹腔镜手术", "render": "laparoscopic operation", "type": "term", "origin": "chinese"}
+  ]
+}

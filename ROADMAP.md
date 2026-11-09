@@ -13,6 +13,11 @@ Status markers: ✅ done · 🔜 next · 💡 proposed
 - 💡 Douyin/Bilibili: auto-caption via local Whisper when no subtitle file exists
 
 ## Translation quality
+- ✅ Target languages: Vietnamese and English (`--target vi|en`); prompts, name rules, QA wording,
+  exports and the review page follow the target
+- ✅ English names: CC-CEDICT established forms, otherwise Hanyu Pinyin rules (surname first, compound
+  surnames, surname readings, apostrophes, administrative nouns); polyphones flagged
+- 🔜 More targets (e.g. Indonesian, Thai) via the same LANG table; contributions welcome
 - ✅ Value-based numeric QA across zh/en/vi formats and Chinese numerals; DOI/URL/citation checks
 - ✅ Append-only revisions, hash-bound approvals, offline bilingual review page
 - ✅ Hán-Việt transliteration of names/terms: bundled lexicon (Wiktionary + CVDICT) and evidence-ranked,

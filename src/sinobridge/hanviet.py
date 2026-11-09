@@ -123,14 +123,16 @@ def dictionary_glosses(text: str, limit: int = 3) -> list[str]:
 def _pinyin(chunk: str):
     hit = dictionary().get(chunk)
     if not hit:
-        return None
+        from .names import contextual_pinyin
+        return contextual_pinyin(chunk)
     proper = [h for h in hit if h[0] and h[0][0][:1].isupper()]
     py = (proper or hit)[0][0]
     return [p.lower() for p in py] if len(py) == len(chunk) else None
 
 def _segment(text: str, use_lexicon: bool = True):
     """Greedy longest match; yields (chunk, lexicon entry or None, pinyin or None)."""
-    lex, d = lexicon() if use_lexicon else {}, dictionary()
+    from .names import proper_nouns
+    lex, d, pn = lexicon() if use_lexicon else {}, dictionary(), proper_nouns()
     i = 0
     while i < len(text):
         if not CJK.match(text[i]):
@@ -142,7 +144,7 @@ def _segment(text: str, use_lexicon: bool = True):
             continue
         for size in range(min(8, len(text) - i), 0, -1):
             chunk = text[i:i + size]
-            if size == 1 or chunk in lex or chunk in d:
+            if size == 1 or chunk in lex or chunk in d or chunk in pn:
                 yield chunk, lex.get(chunk) if size > 1 else None, _pinyin(chunk)
                 i += size
                 break

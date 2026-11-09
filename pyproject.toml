@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hanviet-bridge"
+version = "0.1.0"
+description = "Traceable Chinese-to-Vietnamese translation and research metadata toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "Tuyen Tran"}]
+dependencies = []
+
+[project.optional-dependencies]
+pdf = ["pymupdf>=1.24"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+hanviet = "hanviet_bridge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
